@@ -29,16 +29,52 @@ class AiCodeHelperApplicationTests {
         aiCodeHelper.chatWithMessage(userMessage);//qwen-max 模型无法直接查看或分析图片
     }
 
+//    @Test
+//    void chat(){
+//        String result= aiCodeHelperService.chat("你好，我是程序员小何hjh");
+//        System.out.println(result);
+//    }
+//    @Test
+//    void chatWithMemory(){
+//        String result= aiCodeHelperService.chat("你好，我是程序员小何hjh");
+//        System.out.println(result);
+//        result = aiCodeHelperService.chat("你好，我是谁来着");
+//        System.out.println(result);
+//    }
     @Test
-    void chat(){
-        String result= aiCodeHelperService.chat("你好，我是程序员小何hjh");
-        System.out.println(result);
+    void chatWithAiService() {
+        // 为不同用户使用不同的 memoryId
+        String user1MemoryId = "user_1001";
+        String user2MemoryId = "user_1002";
+
+        // 用户1的对话
+        String result1 = aiCodeHelperService.chat(user1MemoryId, "你好，我是用户1");
+        System.out.println("用户1结果: " + result1);
+
+        // 用户2的对话
+        String result2 = aiCodeHelperService.chat(user2MemoryId, "你好，我是用户2");
+        System.out.println("用户2结果: " + result2);
+
+        // 用户1继续对话（保持上下文）
+        String result3 = aiCodeHelperService.chat(user1MemoryId, "我刚才说了什么？");
+        System.out.println("用户1继续对话: " + result3);
     }
+
     @Test
-    void chatWithMemory(){
-        String result= aiCodeHelperService.chat("你好，我是程序员小何hjh");
-        System.out.println(result);
-        result = aiCodeHelperService.chat("你好，我是谁来着");
-        System.out.println(result);
+    void multiUserConversationTest() {
+        String user1Id = "user_2001";
+        String user2Id = "user_2002";
+
+        // 用户1开始对话
+        String response1 = aiCodeHelperService.chat(user1Id, "我喜欢Java编程");
+        System.out.println("用户1: " + response1);
+
+        // 用户2开始对话
+        String response2 = aiCodeHelperService.chat(user2Id, "我喜欢Python编程");
+        System.out.println("用户2: " + response2);
+
+        // 用户1继续对话，应该记住自己的上下文
+        String response3 = aiCodeHelperService.chat(user1Id, "我刚才提到我喜欢什么编程语言？");
+        System.out.println("用户1上下文测试: " + response3);
     }
 }
