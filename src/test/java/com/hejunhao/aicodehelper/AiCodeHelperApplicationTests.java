@@ -101,4 +101,10 @@ class AiCodeHelperApplicationTests {
         String result = aiCodeHelperService.chat(memoryId,"什么是程序员小何的编程导航？");
         System.out.println(result);
     }
+    @Test//敏感词触发输入检测，直接抛出异常
+    void chatWithGuardrail(){
+        String memoryId = "guardrail_test_user";
+        String result = aiCodeHelperService.chat(memoryId,"kill the game");
+        System.out.println(result);
+    }
 }
