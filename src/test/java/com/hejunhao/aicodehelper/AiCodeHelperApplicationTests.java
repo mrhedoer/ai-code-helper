@@ -3,11 +3,10 @@ package com.hejunhao.aicodehelper;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.service.Result;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.awt.*;
 
 @SpringBootTest
 class AiCodeHelperApplicationTests {
@@ -76,5 +75,30 @@ class AiCodeHelperApplicationTests {
         // 用户1继续对话，应该记住自己的上下文
         String response3 = aiCodeHelperService.chat(user1Id, "我刚才提到我喜欢什么编程语言？");
         System.out.println("用户1上下文测试: " + response3);
+    }
+
+    @Test
+    void chatForReport(){
+        String userMessage="你好，我是程序员小何hjh，26年应届生，请帮我制定学习报告";
+        AiCodeHelperService.Report report = aiCodeHelperService.chatForReport(userMessage);
+        System.out.println(report);
+    }
+    @Test
+    void chatWithTools() {
+        String memoryId = "interview_question_user";
+        String result = aiCodeHelperService.chat(memoryId, "有哪些常见的计算机网络面试题？");
+        System.out.println("面试题查询结果：");
+        System.out.println(result);
+
+        // 可以继续对话测试上下文记忆
+        String followUpResult = aiCodeHelperService.chat(memoryId, "请详细解释TCP三次握手过程");
+        System.out.println("后续问题结果：");
+        System.out.println(followUpResult);
+    }
+    @Test
+    void chatWithMcp(){
+        String memoryId = "mcp_user";
+        String result = aiCodeHelperService.chat(memoryId,"什么是程序员小何的编程导航？");
+        System.out.println(result);
     }
 }
