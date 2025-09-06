@@ -1,6 +1,6 @@
 # 🤖 AI 编程小助手
 
-> 基于 LangChain4j + 通义千问的 AI 智能编程学习与求职辅导机器人
+> 基于 LangChain4j + 通义千问的 AI 智能编程学习与求职辅导机器人--何浚豪制作
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.3.4-4FC08D.svg)](https://vuejs.org/)
@@ -75,7 +75,7 @@ npm run dev
 ```
 
 #### 3. 访问应用
-- 前端地址: `http://localhost:5173`
+- 前端地址: `http://localhost：3000`
 - 后端API: `http://localhost:8081/api`
 
 
