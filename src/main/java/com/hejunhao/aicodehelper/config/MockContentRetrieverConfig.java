@@ -1,4 +1,4 @@
-package com.hejunhao.aicodehelper;
+package com.hejunhao.aicodehelper.config;
 
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import org.springframework.context.annotation.Bean;
