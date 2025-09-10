@@ -23,7 +23,7 @@ public class Mcpconfig {
                 .build();
         //创建MCP客户端
         McpClient mcpClient = new DefaultMcpClient.Builder()
-                .key("yupiMcpClient")
+                .key("hjhMcpClient")
                 .transport(transport)
                 .build();
         //从MCP客户端获取工具
