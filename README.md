@@ -1,117 +1,128 @@
-# AI 编程小助手前端
+# 🤖 AI 编程小助手
 
-这是一个基于Vue3的AI编程小助手前端应用，提供聊天室风格的界面来与AI进行编程学习和求职面试相关的对话。
+> 基于 LangChain4j + 通义千问的 AI 智能编程学习与求职辅导机器人--何浚豪制作
 
-## 功能特性
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.3.4-4FC08D.svg)](https://vuejs.org/)
+[![LangChain4j](https://img.shields.io/badge/LangChain4j-1.1.0-blue.svg)](https://github.com/langchain4j/langchain4j)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 
-- 🎨 现代化的聊天室界面设计
-- 💬 实时SSE流式对话
-- 📱 响应式设计，支持移动端
-- 🔄 自动生成会话ID
-- ⚡ 基于Vue3 + Vite的快速开发体验
 
-## 技术栈
 
-- **Vue 3** - 渐进式JavaScript框架
-- **Vite** - 快速的前端构建工具
-- **Axios** - HTTP客户端库
-- **Server-Sent Events (SSE)** - 实时数据流
+## ✨ 项目介绍
 
-## 项目结构
 
-```
-src/
-├── components/
-│   ├── ChatRoom.vue      # 聊天室主组件
-│   └── MessageInput.vue  # 消息输入组件
-├── utils/
-│   └── memoryId.js       # 会话ID生成工具
-├── App.vue               # 根组件
-├── main.js               # 应用入口
-└── style.css             # 全局样式
-```
+### 技术
 
-## 安装和运行
+#### AI 服务
+- **LangChain4j集成**: 采用业界领先的AI应用开发框架
+- **通义千问模型**: 基于阿里云大模型，专业可靠
+- **流式响应**: 实时打字机效果，提升用户体验
 
-### 1. 安装依赖
+#### 安全机制
+- **输入安全防护**: 检测敏感内容，确保应用安全
 
+#### 工具集成
+- **RAG检索增强**: 结合本地知识库，提供精准答案
+- **MCP协议支持**: 模型上下文协议，增强AI能力
+- **面试题搜索**: 实时抓取最新面试题目
+- **Web爬虫工具**: 获取实时技术资讯
+
+#### 项目成果
+AI聊天展示
+<img width="1920" height="965" alt="image" src="https://github.com/user-attachments/assets/65338899-bc2b-46b3-a825-95126aec0715" />
+<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/f25f0a09-9185-4234-9a58-14d6fee7b8ba" />
+数据库展示
+<img width="1920" height="1040" alt="image" src="https://github.com/user-attachments/assets/47bd4459-5d83-490b-a748-1910aa3ae73e" />
+
+
+## 🚀 快速开始
+
+### 环境要求
+
+- **Java**: JDK 21+
+- **Node.js**: 16.0+
+- **Maven**: 3.6+
+- **通义千问API**: 需申请API密钥
+- **Big Model API**: 需申请API密钥
+
+### 启动步骤
+
+#### 1. 后端启动
 ```bash
+# 克隆项目
+git clone <repository-url>
+cd ai-code-helper
+
+# 配置API密钥
+# 编写 src/main/resources/application.yml(因个人隐私所以没上传)
+# 填入您的通义千问 API 和 Big Model API 密钥
+
+# 启动后端服务
+mvn spring-boot:run
+```
+
+#### 2. 前端启动
+```bash
+# 进入前端目录
+cd ai-code-helper-frontend
+
+# 安装依赖
 npm install
-```
 
-### 2. 启动开发服务器
-
-```bash
+# 启动开发服务器
 npm run dev
 ```
 
-应用将在 `http://localhost:3000` 启动
+#### 3. 访问应用
+- 前端地址: `http://localhost：3000`
+- 后端API: `http://localhost:8081/api`
 
-### 3. 构建生产版本
 
-```bash
-npm run build
+
+## 技术架构
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Vue.js 前端    │────│  Spring Boot   │
+│   - 聊天界面     │    │    后端服务      │
+│   - 实时流式     │    │   - RESTful API │
+│   - Markdown    │    │   - SSE 推送     │
+└─────────────────┘    └─────────────────┘
+                              │
+                    ┌─────────────────┐
+                    │   LangChain4j   │
+                    │   - AI服务层    │
+                    │   - 工具集成    │
+                    │   - 安全防护    │
+                    └─────────────────┘
+                              │
+                    ┌─────────────────┐
+                    │   通义千问API    │
+                    │   - 对话模型    │
+                    │   - 嵌入模型    │
+                    │   - 流式输出    │
+                    └─────────────────┘
 ```
 
-### 4. 预览生产版本
 
-```bash
-npm run preview
-```
 
-## 后端接口
+## 核心模块
 
-应用需要连接到运行在 `http://localhost:8081` 的SpringBoot后端服务。
+- `AiCodeHelperService`: 核心对话服务
+- `QwenChatModelConfig`: 模型配置管理
+- `RagConfig`: 检索增强配置
+- `McpConfig`: 模型上下文协议
 
-### 接口信息
+- `InterviewQuestionTool`: 面试题搜索
+- `SafeInputGuardrail`: 输入安全防护
+- `ChatModelListener`: 对话监听器
 
-- **基础URL**: `http://localhost:8081/api`
-- **聊天接口**: `GET /ai/chat`
-- **参数**: 
-  - `memoryId`: 会话ID (数字)
-  - `message`: 用户消息 (字符串)
-- **响应**: Server-Sent Events流
 
-## 使用说明
 
-1. 确保后端服务已启动并运行在 `http://localhost:8081`
-2. 打开应用后会自动生成一个唯一的会话ID
-3. 在输入框中输入你的编程问题或面试相关问题
-4. AI会通过SSE流式返回回答
-5. 支持多轮对话，会话ID保持不变
+## 致谢
 
-## 开发说明
-
-### 主要组件
-
-- **ChatRoom**: 聊天室主组件，管理消息列表和SSE连接
-- **MessageInput**: 消息输入组件，支持多行输入和快捷键发送
-
-### 关键功能
-
-- 自动生成会话ID用于区分不同对话
-- SSE连接管理，支持错误处理和自动重连
-- 消息格式化显示，支持换行
-- 响应式设计，适配不同屏幕尺寸
-- 智能连接状态管理，自动切换测试模式
-
-## 后端要求
-
-- SpringBoot应用运行在8081端口
-- 支持SSE (Server-Sent Events)
-- 正确的CORS配置
-- API接口路径：`/api/ai/chat`
-
-## 浏览器支持
-
-- Chrome (推荐)
-- Firefox
-- Safari
-- Edge
-
-## 注意事项
-
-- 确保后端服务已启动并运行在8081端口
-- 需要现代浏览器支持SSE和ES6+语法
-- 建议使用Chrome浏览器以获得最佳体验
-- 如果后端连接失败，应用会自动切换到测试模式
+- [LangChain4j](https://github.com/langchain4j/langchain4j) - 强大的AI应用开发框架
+- [阿里云通义千问](https://dashscope.aliyun.com/) - 优秀的大语言模型
+- [Spring Boot](https://spring.io/projects/spring-boot) - 简化的Java开发框架
+- [Vue.js](https://vuejs.org/) - 渐进式JavaScript框架
