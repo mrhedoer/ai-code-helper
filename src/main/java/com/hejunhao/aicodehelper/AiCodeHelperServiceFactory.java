@@ -41,7 +41,7 @@ public class AiCodeHelperServiceFactory {
     public AiCodeHelperService aiCodeHelperService() {
         return AiServices.builder(AiCodeHelperService.class)
                 .chatModel(qwenChatModel)  // 修正为正确的方法名
-                .streamingChatModel(qwenStreamingChatModel)
+                .streamingChatModel(qwenStreamingChatModel) //流式输出
                 .chatMemoryProvider(chatMemoryProvider()) // 指定ChatMemoryProvider
                 .contentRetriever(contentRetriever)// RAG 检索增强生成
                 .tools(new InterviewQuestionTool())// 工具调用
