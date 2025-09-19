@@ -99,7 +99,6 @@ export default {
       })
 
       this.isLoading = true
-      this.isTyping = true
       this.scrollToBottom()
 
       try {
@@ -109,7 +108,6 @@ export default {
         this.addErrorMessage('抱歉，发送消息时出现错误，请稍后重试。')
       } finally {
         this.isLoading = false
-        this.isTyping = false
       }
     },
 
@@ -126,13 +124,15 @@ export default {
           this.eventSource.close()
         }
 
+        // 创建AI消息对象，初始内容为"正在思考..."
         let aiMessage = {
           id: Date.now() + 1,
           type: 'ai',
-          content: '',
+          content: '正在思考...',
           timestamp: new Date()
         }
 
+        // 将AI消息添加到消息列表中
         this.messages.push(aiMessage)
 
         // 创建SSE连接
@@ -163,8 +163,16 @@ export default {
 
         // 处理正常消息 - 直接添加到消息内容中
         if (event.data) {
-          aiMessage.content += event.data
+          // 如果是第一条实际内容，替换掉"正在思考..."提示
+          if (aiMessage.content === '正在思考...') {
+            aiMessage.content = event.data
+          } else {
+            aiMessage.content += event.data
+          }
           this.scrollToBottom()
+
+          // 强制更新DOM以立即显示新内容
+          this.$forceUpdate()
         }
       }
 
@@ -172,7 +180,7 @@ export default {
         console.error('SSE连接错误:', error)
 
         // 检查是否已经收到了完整消息
-        if (aiMessage.content && aiMessage.content.length > 0) {
+        if (aiMessage.content && aiMessage.content !== '正在思考...' && aiMessage.content.length > 0) {
           // 如果已经有内容，认为消息接收完成
           this.finishAIResponse(aiMessage)
           resolve()
@@ -190,8 +198,8 @@ export default {
       // 设置超时
       setTimeout(() => {
         if (this.eventSource && this.eventSource.readyState !== EventSource.CLOSED) {
-          // 如果已经有内容，认为消息接收完成
-          if (aiMessage.content && aiMessage.content.length > 0) {
+          // 如果已经有内容且不是初始提示，认为消息接收完成
+          if (aiMessage.content && aiMessage.content !== '正在思考...' && aiMessage.content.length > 0) {
             this.finishAIResponse(aiMessage)
             resolve()
           } else {
@@ -211,7 +219,6 @@ export default {
         this.eventSource.close()
       }
       this.isLoading = false
-      this.isTyping = false
 
       // 确保消息末尾没有多余的空格或特殊字符
       if (aiMessage.content) {
