@@ -205,7 +205,6 @@ npm run preview
 ## 🛠 开发与调试建议
 
 - 确保 CORS 允许 `http://localhost:3000` 访问后端。
-- 若后端连接失败，前端会切换到测试模式（详见前端 `README.md`）。
 - Windows PowerShell 环境下建议以管理员身份运行首次端口开放相关命令（如需要）。
 
 
