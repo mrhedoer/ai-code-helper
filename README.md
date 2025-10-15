@@ -1,6 +1,6 @@
-# 🤖 AI 编程小助手
+# 🤖 AI 编程小助手（全栈）
 
-> 基于 LangChain4j + 通义千问的 AI 智能编程学习与求职辅导机器人--何浚豪制作
+> 基于 Spring Boot + Vue3 + LangChain4j + 通义千问 的 AI 编程学习与求职辅导助手。
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.3.4-4FC08D.svg)](https://vuejs.org/)
@@ -8,79 +8,138 @@
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 
 
+## ✨ 概览
 
-## ✨ 项目介绍
+- **AI 能力**：集成 LangChain4j，接入通义千问（对话、嵌入、流式输出）。
+- **实时体验**：SSE 流式输出，打字机体验顺滑。
+- **安全防护**：输入安全检测（Guardrail），拦截敏感/风险内容。
+- **工具增强**：RAG 检索、本地知识库、MCP 协议、面试题检索、简单爬虫集成。
+
+## 🖼️ 可视化展示
+
+| 功能 | 预览图 |
+|------|--------|
+| 流式输出展示 | ![img.png](img.png) |
+| 上下文展示 | ![img_1.png](img_1.png) |
+| 会话记忆展示 | ![img_2.png](img_2.png) |
+| 数据库展示 | ![img_3.png](img_3.png) |
 
 
-### 技术
+## 🧱 目录结构
 
-#### AI 服务
-- **LangChain4j集成**: 采用业界领先的AI应用开发框架
-- **通义千问模型**: 基于阿里云大模型，专业可靠
-- **流式响应**: 实时打字机效果，提升用户体验
+```
+ai-code-helper/
+├─ ai-code-helper-frontend/            # 前端（Vue3 + Vite）
+│  ├─ src/
+│  │  ├─ components/
+│  │  ├─ utils/
+│  │  ├─ App.vue
+│  │  └─ main.js
+│  └─ README.md
+├─ src/main/java/com/hejunhao/aicodehelper/   # 后端（Spring Boot）
+│  ├─ AiController.java                # SSE `GET /ai/chat`
+│  ├─ ChatController.java             # 其它REST接口
+│  ├─ AiCodeHelperService.java        # 会话接口定义
+│  ├─ AiCodeHelperServiceFactory.java # 装配AiServices
+│  ├─ AiCodeHelperApplication.java    # 启动类
+│  ├─ AiCodeHelper.java               # 简单示例服务
+│  ├─ MySqlChatMemoryStore.java       # 会话记忆存储
+│  ├─ ChatMessageEntity.java          # JPA实体
+│  ├─ ChatMessageRepository.java      # JPA仓库
+│  ├─ config/                         # CORS、RAG等配置
+│  ├─ listener/                       # 模型监听
+│  ├─ guardrail/                      # 安全防护
+│  ├─ mcp/                            # MCP 客户端与工具
+│  ├─ model/                          # 模型装配（如 `QwenChatModelConfig`）
+│  └─ tools/                          # 工具集成（面试题等）
+├─ src/main/resources/                 # `application.yml`、静态资源、系统提示词
+├─ pom.xml
+└─ README.md
+```
 
-#### 安全机制
-- **输入安全防护**: 检测敏感内容，确保应用安全
 
-#### 工具集成
-- **RAG检索增强**: 结合本地知识库，提供精准答案
-- **MCP协议支持**: 模型上下文协议，增强AI能力
-- **面试题搜索**: 实时抓取最新面试题目
-- **Web爬虫工具**: 获取实时技术资讯
+## ⚙️ 环境要求
 
-#### 项目成果
-AI聊天展示
-<img width="1920" height="965" alt="image" src="https://github.com/user-attachments/assets/65338899-bc2b-46b3-a825-95126aec0715" />
-<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/f25f0a09-9185-4234-9a58-14d6fee7b8ba" />
-数据库展示
-<img width="1920" height="1040" alt="image" src="https://github.com/user-attachments/assets/47bd4459-5d83-490b-a748-1910aa3ae73e" />
+- Java 21+
+- Maven 3.6+
+- Node.js 16+
+- 可用的通义千问/大模型 API 密钥
 
 
 ## 🚀 快速开始
 
-### 环境要求
+### 1) 克隆并进入项目
 
-- **Java**: JDK 21+
-- **Node.js**: 16.0+
-- **Maven**: 3.6+
-- **通义千问API**: 需申请API密钥
-- **Big Model API**: 需申请API密钥
-
-### 启动步骤
-
-#### 1. 后端启动
 ```bash
-# 克隆项目
 git clone <repository-url>
 cd ai-code-helper
+```
 
-# 配置API密钥
-# 编写 src/main/resources/application.yml(因个人隐私所以没上传)
-# 填入您的通义千问 API 和 Big Model API 密钥
+### 2) 配置后端
 
-# 启动后端服务
+在 `src/main/resources/application.yml` 中配置必要的密钥与参数（示例）：
+
+```yaml
+spring:
+  application:
+    name: ai-code-helper
+  profiles:
+    active: local
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_chat_db?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: qwen-max
+        api-key: <YOUR_DASHSCOPE_API_KEY> # 通义千问密钥
+      streaming-chat-model:
+        model-name: qwen-max
+        api-key: <YOUR_DASHSCOPE_API_KEY> # 通义千问密钥
+    bigmodel:
+      chat-model:
+        model-name: glm-4
+        api-key: <YOUR_API_KEY> # 智谱密钥
+
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+```
+
+> 温馨提示：仓库未包含私密 `application.yml`，请按需创建；如不使用数据库，可先移除或注释数据源配置。
+
+启动后端：
+
+```bash
 mvn spring-boot:run
 ```
 
-#### 2. 前端启动
+### 3) 启动前端
+
 ```bash
-# 进入前端目录
 cd ai-code-helper-frontend
-
-# 安装依赖
 npm install
-
-# 启动开发服务器
 npm run dev
 ```
 
-#### 3. 访问应用
-- 前端地址: `http://localhost：3000`
-- 后端API: `http://localhost:8081/api`
+### 4) 访问
+
+- 前端：`http://localhost:3000`
+- 后端：`http://localhost:8081/api`
 
 
-
-## 技术架构
+## 🧩 技术架构
 
 ```
 ┌─────────────────┐    ┌─────────────────┐
@@ -106,23 +165,58 @@ npm run dev
 ```
 
 
+## 🔌 API 概览（后端）
 
-## 核心模块
-
-- `AiCodeHelperService`: 核心对话服务
-- `QwenChatModelConfig`: 模型配置管理
-- `RagConfig`: 检索增强配置
-- `McpConfig`: 模型上下文协议
-
-- `InterviewQuestionTool`: 面试题搜索
-- `SafeInputGuardrail`: 输入安全防护
-- `ChatModelListener`: 对话监听器
+- 基础地址：`http://localhost:8081/api`
+- 聊天接口（SSE）：`GET /ai/chat`
+  - 参数：
+    - `memoryId`：会话 ID（数字）
+    - `message`：用户消息（字符串）
+  - 响应：`text/event-stream`（SSE 流）
 
 
+## 🧠 核心模块（后端）
 
-## 致谢
+- `AiCodeHelperService`：核心对话与编排
+- `QwenChatModelConfig`：通义千问模型配置
+- `MySqlChatMemoryStore`：会话记忆（可选）
+- `SafeInputGuardrail`：输入安全防护
+- `InterviewQuestionTool`：面试题搜索工具
+- `ChatModelListenerConfig`：对话监听与事件
 
-- [LangChain4j](https://github.com/langchain4j/langchain4j) - 强大的AI应用开发框架
-- [阿里云通义千问](https://dashscope.aliyun.com/) - 优秀的大语言模型
-- [Spring Boot](https://spring.io/projects/spring-boot) - 简化的Java开发框架
-- [Vue.js](https://vuejs.org/) - 渐进式JavaScript框架
+
+## 📦 常用命令
+
+后端：
+```bash
+mvn clean package
+mvn spring-boot:run
+```
+
+前端（在 `ai-code-helper-frontend/` 下）：
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
+```
+
+
+## 🛠 开发与调试建议
+
+- 确保 CORS 允许 `http://localhost:3000` 访问后端。
+- 若后端连接失败，前端会切换到测试模式（详见前端 `README.md`）。
+- Windows PowerShell 环境下建议以管理员身份运行首次端口开放相关命令（如需要）。
+
+
+## 🙏 致谢
+
+- [LangChain4j](https://github.com/langchain4j/langchain4j)
+- [阿里云通义千问](https://dashscope.aliyun.com/)
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [Vue.js](https://vuejs.org/)
+
+
+---
+
+前端详细说明请参阅 `ai-code-helper-frontend/README.md`。

@@ -4,9 +4,6 @@
       <h1>AI 编程小助手</h1>
       <div class="session-info">
         <span>会话ID: {{ memoryId }}</span>
-        <div class="status-indicator">
-          <span>🟢 在线</span>
-        </div>
       </div>
     </div>
 
@@ -294,13 +291,6 @@ export default {
   gap: 0.25rem;
   position:absolute;
   right: 2rem;
-}
-
-.status-indicator {
-  font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .chat-messages {
