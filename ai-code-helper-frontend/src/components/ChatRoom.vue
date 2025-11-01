@@ -4,6 +4,7 @@
       <h1>AI 编程小助手</h1>
       <div class="session-info">
         <span>会话ID: {{ memoryId }}</span>
+        <button @click="goToAdmin" class="admin-button">管理员入口</button>
       </div>
     </div>
 
@@ -253,6 +254,10 @@ export default {
           container.scrollTop = container.scrollHeight
         }
       })
+    },
+
+    goToAdmin() {
+      this.$router.push('/admin/login')
     }
   }
 }
@@ -288,9 +293,25 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.25rem;
+  gap: 0.5rem;
   position:absolute;
   right: 2rem;
+}
+
+.admin-button {
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.admin-button:hover {
+  background: white;
+  color: #667eea;
 }
 
 .chat-messages {

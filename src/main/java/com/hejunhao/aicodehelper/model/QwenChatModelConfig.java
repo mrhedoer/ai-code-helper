@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -25,7 +26,7 @@ public class QwenChatModelConfig {
         return QwenChatModel.builder()
                 .apiKey(apiKey)
                 .modelName(modelName)
-                .listeners(List.of(chatModelListener))
+                .listeners(Collections.singletonList(chatModelListener))
                 .build();
     }
 }

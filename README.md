@@ -1,37 +1,46 @@
-# 🤖 AI 编程小助手（全栈）
+# 🤖 AI 编程小助手
 
-> 基于 Spring Boot + Vue3 + LangChain4j + 通义千问 的 AI 编程学习与求职辅导助手。
+> 基于 Spring Boot + Vue3 + LangChain4j + 通义千问 的智能编程学习与求职辅导助手
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.3.4-4FC08D.svg)](https://vuejs.org/)
 [![LangChain4j](https://img.shields.io/badge/LangChain4j-1.1.0-blue.svg)](https://github.com/langchain4j/langchain4j)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 
+## ✨ 核心特性
 
-## ✨ 概览
+| 特性 | 说明 |
+|------|------|
+| 🤖 **AI 能力** | 集成 LangChain4j + 通义千问，支持对话、嵌入、流式输出 |
+| ⚡ **实时交互** | SSE 流式输出，打字机效果，响应迅速 |
+| 🛡️ **安全防护** | 输入安全检测（Guardrail），智能拦截敏感内容 |
+| 🔧 **工具增强** | RAG 检索、本地知识库、MCP 协议、面试题库 |
+| 📊 **管理后台** | 数据统计、查询、搜索、删除等完整管理功能 |
 
-- **AI 能力**：集成 LangChain4j，接入通义千问（对话、嵌入、流式输出）。
-- **实时体验**：SSE 流式输出，打字机体验顺滑。
-- **安全防护**：输入安全检测（Guardrail），拦截敏感/风险内容。
-- **工具增强**：RAG 检索、本地知识库、MCP 协议、面试题检索、简单爬虫集成。
+## 📸 功能预览
 
-## 🖼️ 可视化展示
+<table>
+  <tr>
+    <td align="center"><b>前端界面</b><br/><img src="img_5.png" width="200"/></td>
+    <td align="center"><b>流式输出</b><br/><img src="img_8.png" width="200"/></td>
+    <td align="center"><b>上下文对话</b><br/><img src="img_6.png" width="200"/></td>
+    <td align="center"><b>后台界面</b><br/><img src="img_4.png" width="200"/></td>
+  </tr>
+</table>
 
-| 功能 | 预览图 |
-|------|--------|
-| 流式输出展示 | ![img.png](img.png) |
-| 上下文展示 | ![img_1.png](img_1.png) |
-| 会话记忆展示 | ![img_2.png](img_2.png) |
-| 数据库展示 | ![img_3.png](img_3.png) |
-
-
-## 🧱 目录结构
+## 📁 项目结构
 
 ```
 ai-code-helper/
 ├─ ai-code-helper-frontend/            # 前端（Vue3 + Vite）
 │  ├─ src/
 │  │  ├─ components/
+│  │  │  ├─ ChatRoom.vue             # 聊天室组件
+│  │  │  ├─ MessageInput.vue         # 消息输入组件
+│  │  │  ├─ AdminLogin.vue           # 管理员登录页面
+│  │  │  └─ AdminDashboard.vue       # 管理员后台页面
+│  │  ├─ router/
+│  │  │  └─ index.js                 # 路由配置
 │  │  ├─ utils/
 │  │  ├─ App.vue
 │  │  └─ main.js
@@ -39,6 +48,7 @@ ai-code-helper/
 ├─ src/main/java/com/hejunhao/aicodehelper/   # 后端（Spring Boot）
 │  ├─ AiController.java                # SSE `GET /ai/chat`
 │  ├─ ChatController.java             # 其它REST接口
+│  ├─ AdminController.java            # 管理员接口
 │  ├─ AiCodeHelperService.java        # 会话接口定义
 │  ├─ AiCodeHelperServiceFactory.java # 装配AiServices
 │  ├─ AiCodeHelperApplication.java    # 启动类
@@ -60,56 +70,39 @@ ai-code-helper/
 
 ## ⚙️ 环境要求
 
-- Java 21+
-- Maven 3.6+
-- Node.js 16+
-- 可用的通义千问/大模型 API 密钥
-
+| 环境 | 版本要求 |
+|------|----------|
+| Java | 21+ |
+| Maven | 3.6+ |
+| Node.js | 16+ |
+| MySQL | 5.7+ (可选) |
+| API Key | 通义千问 / 智谱 GLM |
 
 ## 🚀 快速开始
 
-### 1) 克隆并进入项目
+### 1️⃣ 克隆项目
 
 ```bash
 git clone <repository-url>
 cd ai-code-helper
 ```
 
-### 2) 配置后端
+### 2️⃣ 配置后端
 
-在 `src/main/resources/application.yml` 中配置必要的密钥与参数（示例）：
+创建 `src/main/resources/application.yml`，配置必要参数：
 
 ```yaml
 spring:
-  application:
-    name: ai-code-helper
-  profiles:
-    active: local
   datasource:
-    url: jdbc:mysql://localhost:3306/ai_chat_db?useUnicode=true&characterEncoding=utf8&useSSL=false
+    url: jdbc:mysql://localhost:3306/ai_chat_db
     username: root
     password: 123456
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    database-platform: org.hibernate.dialect.MySQL8Dialect
 
 langchain4j:
   community:
     dashscope:
       chat-model:
-        model-name: qwen-max
-        api-key: <YOUR_DASHSCOPE_API_KEY> # 通义千问密钥
-      streaming-chat-model:
-        model-name: qwen-max
-        api-key: <YOUR_DASHSCOPE_API_KEY> # 通义千问密钥
-    bigmodel:
-      chat-model:
-        model-name: glm-4
-        api-key: <YOUR_API_KEY> # 智谱密钥
-
+        api-key: <YOUR_DASHSCOPE_API_KEY>  # 通义千问密钥
 
 server:
   port: 8081
@@ -117,26 +110,29 @@ server:
     context-path: /api
 ```
 
-> 温馨提示：仓库未包含私密 `application.yml`，请按需创建；如不使用数据库，可先移除或注释数据源配置。
+> 💡 **提示**：完整配置示例请查看项目中的 `application.yml.example`
 
-启动后端：
+### 3️⃣ 启动服务
 
+**启动后端：**
 ```bash
 mvn spring-boot:run
 ```
 
-### 3) 启动前端
-
+**启动前端：**
 ```bash
 cd ai-code-helper-frontend
 npm install
 npm run dev
 ```
 
-### 4) 访问
+### 4️⃣ 访问应用
 
-- 前端：`http://localhost:3000`
-- 后端：`http://localhost:8081/api`
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| 🎨 **前端** | http://localhost:3000 | 聊天界面 |
+| 🔌 **后端** | http://localhost:8081/api | API 服务 |
+| 👨‍💼 **管理后台** | 点击首页"管理员入口" | 用户名: `hejunhao` / 密码: `123456` |
 
 
 ## 🧩 技术架构
@@ -165,47 +161,115 @@ npm run dev
 ```
 
 
-## 🔌 API 概览（后端）
+## 🔌 API 接口
 
-- 基础地址：`http://localhost:8081/api`
-- 聊天接口（SSE）：`GET /ai/chat`
-  - 参数：
-    - `memoryId`：会话 ID（数字）
-    - `message`：用户消息（字符串）
-  - 响应：`text/event-stream`（SSE 流）
+**基础地址：** `http://localhost:8081/api`
 
+### 💬 聊天接口
 
-## 🧠 核心模块（后端）
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/ai/chat` | GET (SSE) | 流式对话接口，参数：`memoryId`、`message` |
 
-- `AiCodeHelperService`：核心对话与编排
-- `QwenChatModelConfig`：通义千问模型配置
-- `MySqlChatMemoryStore`：会话记忆（可选）
-- `SafeInputGuardrail`：输入安全防护
-- `InterviewQuestionTool`：面试题搜索工具
-- `ChatModelListenerConfig`：对话监听与事件
+### 👨‍💼 管理员接口
+
+| 接口 | 方法 | 说明 | 鉴权 |
+|------|------|------|------|
+| `/admin/login` | POST | 管理员登录 | - |
+| `/admin/messages` | GET | 获取所有消息 | ✓ |
+| `/admin/messages/search` | GET | 搜索消息 | ✓ |
+| `/admin/messages/{id}` | DELETE | 删除单条消息 | ✓ |
+| `/admin/conversations/{id}` | DELETE | 删除整个会话 | ✓ |
+
+> 🔑 需要鉴权的接口请在请求头添加 `Authorization: <token>`
+
+## 🔐 管理后台
+
+### ✨ 主要功能
+
+- **🔐 登录认证**：用户名/密码验证，Token-based 身份验证
+- **📊 数据统计**：总消息数、会话数、用户/AI消息统计
+- **🔍 智能搜索**：支持按会话ID或消息内容快速搜索
+- **📝 数据展示**：表格形式展示所有聊天记录
+- **🗑️ 数据管理**：支持删除单条消息或整个会话
+- **🛡️ 安全保护**：路由守卫 + Token验证
+
+### 📝 使用指南
+
+1. 点击首页右上角 **"管理员入口"** 按钮
+2. 使用默认凭证登录（用户名：`hejunhao` / 密码：`123456`）
+3. 登录成功后即可进行数据管理操作
+
+### ⚠️ 安全提示
+
+> **生产环境必做：**
+> - 修改默认账号密码
+> - 使用加密算法（如 BCrypt）
+> - 考虑使用 JWT 替代简单 Token
+> - 添加操作日志和请求频率限制
+
+## 🧠 核心模块
+
+| 模块 | 说明 |
+|------|------|
+| `AiCodeHelperService` | 核心对话与编排 |
+| `QwenChatModelConfig` | 通义千问模型配置 |
+| `MySqlChatMemoryStore` | 会话记忆存储 |
+| `SafeInputGuardrail` | 输入安全防护 |
+| `InterviewQuestionTool` | 面试题搜索工具 |
+| `AdminController` | 管理员后台接口 |
 
 
 ## 📦 常用命令
 
-后端：
+<table>
+<tr>
+<td width="50%">
+
+**后端命令**
 ```bash
+# 编译打包
 mvn clean package
+
+# 启动服务
 mvn spring-boot:run
+
+# 跳过测试
+mvn clean install -DskipTests
 ```
 
-前端（在 `ai-code-helper-frontend/` 下）：
+</td>
+<td width="50%">
+
+**前端命令**
 ```bash
+# 安装依赖
 npm install
+
+# 开发模式
 npm run dev
+
+# 生产构建
 npm run build
-npm run preview
 ```
 
+</td>
+</tr>
+</table>
 
-## 🛠 开发与调试建议
+## 🛠️ 开发建议
 
-- 确保 CORS 允许 `http://localhost:3000` 访问后端。
-- Windows PowerShell 环境下建议以管理员身份运行首次端口开放相关命令（如需要）。
+- ✅ 确保 CORS 配置允许前端访问
+- ✅ Windows 环境建议使用管理员权限首次运行
+- ✅ 建议使用 IDEA 进行开发
+- ✅ 开发时打开浏览器控制台便于调试
+
+## 📚 技术文档
+
+- 📖 [LangChain4j 官方文档](https://github.com/langchain4j/langchain4j)
+- 📖 [Spring Boot 文档](https://spring.io/projects/spring-boot)
+- 📖 [Vue.js 3 文档](https://vuejs.org/)
+- 📖 [通义千问 API](https://dashscope.aliyun.com/)
 
 
 ## 🙏 致谢
@@ -218,4 +282,10 @@ npm run preview
 
 ---
 
-前端详细说明请参阅 `ai-code-helper-frontend/README.md`。
+<div align="center">
+
+**⭐ 如果这个项目对你有帮助，请给一个 Star ⭐**
+
+Made with ❤️ by [hejunhao]
+
+</div>

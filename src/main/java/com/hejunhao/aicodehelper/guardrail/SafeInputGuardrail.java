@@ -4,13 +4,16 @@ import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.guardrail.InputGuardrail;
 import dev.langchain4j.guardrail.InputGuardrailResult;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.Collections;
 
 /**
  * 安全检测输入护轨
  */
 public class SafeInputGuardrail implements InputGuardrail {
-    private static  final Set<String> sensitiveWords = Set.of("kill","evil");
+    private static final Set<String> sensitiveWords = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("kill", "evil"))) ;
     /**
      * 检测用户输入是否安全
      */
