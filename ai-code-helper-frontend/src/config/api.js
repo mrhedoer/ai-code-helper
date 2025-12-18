@@ -5,7 +5,9 @@ export const API_CONFIG = {
   
   // API端点
   ENDPOINTS: {
-    CHAT: '/api/ai/chat'
+    CHAT: '/api/ai/chat',
+    USER_LOGIN: '/api/user/login',
+    ADMIN_LOGIN: '/api/admin/login'
   },
   
   // 超时设置（毫秒）

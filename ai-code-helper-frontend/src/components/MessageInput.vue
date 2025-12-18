@@ -1,28 +1,41 @@
 <template>
-  <div class="message-input">
-    <div class="input-container">
+  <div class="message-input-wrapper">
+    <div class="input-group" :class="{ 'is-focused': isFocused, 'is-disabled': disabled }">
       <textarea
-        ref="textarea"
-        v-model="message"
-        :disabled="disabled"
-        placeholder="输入你的问题..."
-        @keydown="handleKeyDown"
-        @input="adjustHeight"
-        class="input-field"
-        rows="1"
+          ref="textarea"
+          v-model="message"
+          :disabled="disabled"
+          placeholder="输入消息..."
+          @keydown="handleKeyDown"
+          @input="adjustHeight"
+          @focus="isFocused = true"
+          @blur="isFocused = false"
+          class="chat-textarea"
+          rows="1"
       ></textarea>
-      <button
-        @click="sendMessage"
-        :disabled="!message.trim() || disabled"
-        class="send-button"
-        type="button"
-      >
-        <svg v-if="!disabled" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
-        </svg>
-        <div v-else class="loading-spinner"></div>
-      </button>
+
+      <div class="action-area">
+        <button
+            @click="sendMessage"
+            :disabled="!isValidMessage || disabled"
+            class="send-btn"
+            :class="{ 'has-content': isValidMessage }"
+            type="button"
+            aria-label="发送消息"
+        >
+          <div v-if="disabled && message.length > 0" class="loading-spinner"></div>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
     </div>
+
+    <!-- 可选：字数统计或提示 -->
+    <!-- <div class="input-footer" v-if="message.length > 500">
+      {{ message.length }}/1000
+    </div> -->
   </div>
 </template>
 
@@ -37,130 +50,180 @@ export default {
   },
   data() {
     return {
-      message: ''
+      message: '',
+      isFocused: false
+    }
+  },
+  computed: {
+    isValidMessage() {
+      return this.message.trim().length > 0
     }
   },
   methods: {
     handleKeyDown(event) {
+      // Enter 发送，Shift+Enter 换行
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault()
         this.sendMessage()
       }
     },
-    
+
     sendMessage() {
-      if (this.message.trim() && !this.disabled) {
+      if (this.isValidMessage && !this.disabled) {
         this.$emit('send-message', this.message.trim())
         this.message = ''
-        this.adjustHeight()
+        // 发送后重置高度
+        this.$nextTick(() => {
+          this.resetHeight()
+        })
       }
     },
-    
+
     adjustHeight() {
-      this.$nextTick(() => {
-        const textarea = this.$refs.textarea
-        if (textarea) {
-          textarea.style.height = 'auto'
-          const scrollHeight = textarea.scrollHeight
-          const maxHeight = 120 // 最大高度限制
-          textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px'
-        }
-      })
+      const textarea = this.$refs.textarea
+      if (textarea) {
+        // 先重置高度以获得正确的 scrollHeight (处理删除文字的情况)
+        textarea.style.height = 'auto'
+
+        const scrollHeight = textarea.scrollHeight
+        const maxHeight = 150 // 最大高度限制
+
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px'
+
+        // 如果超过最大高度，允许滚动
+        textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
+      }
     },
-    
+
+    resetHeight() {
+      const textarea = this.$refs.textarea
+      if (textarea) {
+        textarea.style.height = 'auto'
+        textarea.style.overflowY = 'hidden'
+      }
+    },
+
     focus() {
       this.$refs.textarea?.focus()
     }
   },
-  
+
   mounted() {
     this.focus()
+    this.resetHeight()
   }
 }
 </script>
 
 <style scoped>
-.message-input {
+.message-input-wrapper {
   width: 100%;
+  padding: 0 0.5rem;
 }
 
-.input-container {
+.input-group {
   display: flex;
   align-items: flex-end;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.5rem; /* 24px */
   padding: 0.5rem;
-  transition: border-color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.input-container:focus-within {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+.input-group.is-focused {
+  border-color: #6366f1; /* Indigo-500 */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.input-field {
+.input-group.is-disabled {
+  background: #f9fafb;
+  border-color: #f3f4f6;
+}
+
+.chat-textarea {
   flex: 1;
   border: none;
   outline: none;
   background: transparent;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  line-height: 1.4;
+  padding: 0.75rem 0 0.75rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
   resize: none;
-  min-height: 24px;
-  max-height: 120px;
+  min-height: 24px; /* 单行高度 */
+  max-height: 150px;
   font-family: inherit;
+  color: #1f2937;
+  overflow-y: hidden; /* 默认隐藏滚动条 */
 }
 
-.input-field::placeholder {
-  color: #6c757d;
+.chat-textarea::placeholder {
+  color: #9ca3af;
 }
 
-.input-field:disabled {
-  opacity: 0.6;
+.chat-textarea:disabled {
   cursor: not-allowed;
+  color: #9ca3af;
 }
 
-.send-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+.action-area {
+  padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 0.5rem;
+}
+
+.send-btn {
+  background: #f3f4f6; /* 默认灰色背景 */
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af; /* 默认灰色图标 */
+  cursor: not-allowed;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
 
-.send-button:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+/* 当有内容且未禁用时的状态 */
+.send-btn.has-content:not(:disabled) {
+  background: #4f46e5; /* Indigo-600 */
+  color: white;
+  cursor: pointer;
+  transform: scale(1);
+  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
 }
 
-.send-button:active:not(:disabled) {
+.send-btn.has-content:not(:disabled):hover {
+  background: #4338ca; /* Indigo-700 */
+  transform: scale(1.05);
+}
+
+.send-btn.has-content:not(:disabled):active {
   transform: scale(0.95);
 }
 
-.send-button:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+  /* 稍微调整图标位置以视觉居中 */
+  margin-left: -1px;
+  margin-top: 1px;
 }
 
+/* Loading 动画 */
 .loading-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
+  border-top: 2px solid #ffffff;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -168,20 +231,26 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .input-container {
-    padding: 0.4rem;
+/* 响应式微调 */
+@media (max-width: 640px) {
+  .input-group {
+    padding: 0.35rem;
+    border-radius: 1.25rem;
   }
-  
-  .input-field {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
+
+  .chat-textarea {
+    padding: 0.6rem 0 0.6rem 0.8rem;
+    font-size: 16px; /* 防止 iOS 缩放 */
   }
-  
-  .send-button {
-    width: 36px;
-    height: 36px;
+
+  .send-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .send-btn svg {
+    width: 16px;
+    height: 16px;
   }
 }
 </style>
