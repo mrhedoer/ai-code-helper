@@ -9,8 +9,8 @@
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h1 class="brand-title">AI 编程助手</h1>
-          <p class="brand-subtitle">智能代码生成，提升开发效率</p>
+          <h1 class="brand-title">找回密码</h1>
+          <p class="brand-subtitle">重置您的账户密码</p>
 
           <!-- 抽象背景装饰 -->
           <div class="abstract-shapes">
@@ -20,15 +20,15 @@
         </div>
       </div>
 
-      <!-- 右侧登录表单区域 -->
+      <!-- 右侧表单区域 -->
       <div class="form-section">
         <div class="form-wrapper">
           <div class="form-header">
-            <h2>欢迎回来</h2>
-            <p>请输入您的账号信息以继续</p>
+            <h2>重置密码</h2>
+            <p>请输入您的用户名和新密码</p>
           </div>
 
-          <form @submit.prevent="handleLogin" class="auth-form">
+          <form @submit.prevent="handleResetPassword" class="auth-form">
             <!-- 用户名输入 -->
             <div class="input-group">
               <label for="username" class="input-label">用户名</label>
@@ -41,9 +41,9 @@
                 </span>
                 <input
                     id="username"
-                    v-model="loginForm.username"
+                    v-model="resetForm.username"
                     type="text"
-                    placeholder="name@example.com"
+                    placeholder="请输入用户名"
                     autocomplete="username"
                     @blur="validateField('username')"
                     @input="clearError('username')"
@@ -52,12 +52,10 @@
               <span v-if="errors.username" class="error-message">{{ errors.username }}</span>
             </div>
 
-            <!-- 密码输入 -->
+            <!-- 新密码输入 -->
             <div class="input-group">
-              <div class="label-row">
-                <label for="password" class="input-label">密码</label>
-              </div>
-              <div class="input-wrapper" :class="{ 'has-error': errors.password }">
+              <label for="newPassword" class="input-label">新密码</label>
+              <div class="input-wrapper" :class="{ 'has-error': errors.newPassword }">
                 <span class="input-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -65,13 +63,13 @@
                   </svg>
                 </span>
                 <input
-                    id="password"
-                    v-model="loginForm.password"
+                    id="newPassword"
+                    v-model="resetForm.newPassword"
                     :type="showPassword ? 'text' : 'password'"
                     placeholder="••••••••"
-                    autocomplete="current-password"
-                    @blur="validateField('password')"
-                    @input="clearError('password')"
+                    autocomplete="new-password"
+                    @blur="validateField('newPassword')"
+                    @input="clearError('newPassword')"
                 />
                 <button
                     type="button"
@@ -89,17 +87,30 @@
                   </svg>
                 </button>
               </div>
-              <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+              <span v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</span>
             </div>
 
-            <!-- 辅助选项 -->
-            <div class="form-options">
-              <label class="checkbox-label">
-                <input v-model="rememberMe" type="checkbox" />
-                <span class="checkbox-custom"></span>
-                <span class="checkbox-text">记住我</span>
-              </label>
-              <a href="#" class="forgot-link" @click.prevent="handleForgotPassword">忘记密码？</a>
+            <!-- 确认新密码输入 -->
+            <div class="input-group">
+              <label for="confirmNewPassword" class="input-label">确认新密码</label>
+              <div class="input-wrapper" :class="{ 'has-error': errors.confirmNewPassword }">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <input
+                    id="confirmNewPassword"
+                    v-model="resetForm.confirmNewPassword"
+                    :type="showPassword ? 'text' : 'password'"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    @blur="validateField('confirmNewPassword')"
+                    @input="clearError('confirmNewPassword')"
+                />
+              </div>
+              <span v-if="errors.confirmNewPassword" class="error-message">{{ errors.confirmNewPassword }}</span>
             </div>
 
             <!-- 全局错误提示 -->
@@ -112,29 +123,23 @@
               <span>{{ errorMessage }}</span>
             </div>
 
-            <!-- 登录按钮 -->
+            <!-- 提交按钮 -->
             <button
                 type="submit"
                 class="submit-btn"
                 :disabled="isLoading || !isFormValid"
             >
               <span v-if="isLoading" class="spinner"></span>
-              <span>{{ isLoading ? '登录中...' : '立即登录' }}</span>
+              <span>{{ isLoading ? '提交中...' : '重置密码' }}</span>
             </button>
 
-            <!-- 注册引导 -->
-            <div class="register-prompt">
-              还没有账户？
-              <a href="#" @click.prevent="handleRegister">免费注册</a>
-            </div>
-
-            <!-- 返回首页按钮 -->
+            <!-- 返回登录 -->
             <div class="back-link-container">
               <button type="button" class="back-link" @click="goBack">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
-                返回首页
+                返回登录
               </button>
             </div>
           </form>
@@ -149,36 +154,32 @@ import axios from 'axios'
 import { API_CONFIG } from '../config/api'
 
 export default {
-  name: 'UserLogin',
+  name: 'ForgotPassword',
   data() {
     return {
-      loginForm: {
+      resetForm: {
         username: '',
-        password: ''
+        newPassword: '',
+        confirmNewPassword: ''
       },
       errors: {
         username: '',
-        password: ''
+        newPassword: '',
+        confirmNewPassword: ''
       },
       errorMessage: '',
       isLoading: false,
-      showPassword: false,
-      rememberMe: false
+      showPassword: false
     }
   },
   computed: {
     isFormValid() {
-      return this.loginForm.username.trim() !== '' &&
-          this.loginForm.password.trim() !== '' &&
+      return this.resetForm.username.trim() !== '' &&
+          this.resetForm.newPassword.trim() !== '' &&
+          this.resetForm.confirmNewPassword.trim() !== '' &&
           !this.errors.username &&
-          !this.errors.password
-    }
-  },
-  mounted() {
-    const savedUsername = localStorage.getItem('savedUsername')
-    if (savedUsername) {
-      this.loginForm.username = savedUsername
-      this.rememberMe = true
+          !this.errors.newPassword &&
+          !this.errors.confirmNewPassword
     }
   },
   methods: {
@@ -186,16 +187,18 @@ export default {
       this.errors[field] = ''
 
       if (field === 'username') {
-        if (!this.loginForm.username.trim()) {
+        if (!this.resetForm.username.trim()) {
           this.errors.username = '请输入用户名'
-        } else if (this.loginForm.username.trim().length < 3) {
-          this.errors.username = '用户名长度不能少于3位'
         }
-      } else if (field === 'password') {
-        if (!this.loginForm.password) {
-          this.errors.password = '请输入密码'
-        } else if (this.loginForm.password.length < 6) {
-          this.errors.password = '密码长度不能少于6位'
+      } else if (field === 'newPassword') {
+        if (!this.resetForm.newPassword) {
+          this.errors.newPassword = '请输入新密码'
+        } else if (this.resetForm.newPassword.length < 6) {
+          this.errors.newPassword = '密码长度不能少于6位'
+        }
+      } else if (field === 'confirmNewPassword') {
+        if (this.resetForm.confirmNewPassword !== this.resetForm.newPassword) {
+          this.errors.confirmNewPassword = '两次输入的密码不一致'
         }
       }
     },
@@ -206,10 +209,11 @@ export default {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword
     },
-    async handleLogin() {
+    async handleResetPassword() {
       this.errorMessage = ''
       this.validateField('username')
-      this.validateField('password')
+      this.validateField('newPassword')
+      this.validateField('confirmNewPassword')
 
       if (!this.isFormValid) return
 
@@ -217,32 +221,23 @@ export default {
 
       try {
         const response = await axios.post(
-            `${API_CONFIG.BASE_URL}/api/user/login`,
-            this.loginForm,
+            `${API_CONFIG.BASE_URL}/api/user/reset-password`,
+            {
+              username: this.resetForm.username,
+              newPassword: this.resetForm.newPassword
+            },
             { timeout: API_CONFIG.TIMEOUT }
         )
 
         if (response.data.success) {
-          const token = response.data.token
-          sessionStorage.setItem('userToken', token)
-          sessionStorage.setItem('username', this.loginForm.username)
-
-          if (this.rememberMe) {
-            localStorage.setItem('savedUsername', this.loginForm.username)
-          } else {
-            localStorage.removeItem('savedUsername')
-          }
-
-          const redirect = this.$route.query.redirect || '/chat'
-          this.$router.push(redirect)
+          alert('密码重置成功，请使用新密码登录')
+          this.$router.push('/login')
         } else {
-          this.errorMessage = response.data.message || '登录失败，请检查账号信息'
+          this.errorMessage = response.data.message || '重置失败，请稍后重试'
         }
       } catch (error) {
-        console.error('登录错误:', error)
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          this.errorMessage = '用户名或密码错误'
-        } else if (error.response?.data?.message) {
+        console.error('重置密码错误:', error)
+        if (error.response?.data?.message) {
           this.errorMessage = error.response.data.message
         } else {
           this.errorMessage = '网络连接失败，请稍后重试'
@@ -251,27 +246,21 @@ export default {
         this.isLoading = false
       }
     },
-    handleForgotPassword() {
-      this.$router.push('/forgot-password')
-    },
-    handleRegister() {
-      this.$router.push('/register')
-    },
     goBack() {
-      this.$router.push('/')
+      this.$router.push('/login')
     }
   }
 }
 </script>
 
 <style scoped>
-/* 容器与布局 */
+/* 复用 UserLogin.vue 的样式 */
 .login-page-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6; /* Gray-100 */
+  background-color: #f3f4f6;
   padding: 1.5rem;
 }
 
@@ -286,10 +275,9 @@ export default {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
 }
 
-/* 左侧品牌区 */
 .brand-section {
   flex: 1;
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); /* Indigo-600 to 700 */
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Amber-500 to 600 */
   padding: 4rem;
   display: flex;
   flex-direction: column;
@@ -335,7 +323,6 @@ export default {
   font-weight: 400;
 }
 
-/* 抽象背景装饰 */
 .abstract-shapes .shape {
   position: absolute;
   border-radius: 50%;
@@ -356,7 +343,6 @@ export default {
   left: -50px;
 }
 
-/* 右侧表单区 */
 .form-section {
   flex: 1;
   display: flex;
@@ -378,43 +364,15 @@ export default {
 .form-header h2 {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827; /* Gray-900 */
+  color: #111827;
   margin-bottom: 0.5rem;
 }
 
 .form-header p {
-  color: #6b7280; /* Gray-500 */
+  color: #6b7280;
   font-size: 0.95rem;
 }
 
-.back-link-container {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.back-link {
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  transition: color 0.2s;
-}
-
-.back-link:hover {
-  color: #1f2937;
-}
-
-.back-link svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* 表单控件 */
 .input-group {
   margin-bottom: 1.5rem;
 }
@@ -423,7 +381,7 @@ export default {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151; /* Gray-700 */
+  color: #374151;
   margin-bottom: 0.5rem;
 }
 
@@ -431,19 +389,19 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
-  border: 1px solid #d1d5db; /* Gray-300 */
+  border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   transition: all 0.2s;
   background: #fff;
 }
 
 .input-wrapper:focus-within {
-  border-color: #4f46e5; /* Indigo-600 */
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: #f59e0b; /* Amber-500 */
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
 .input-wrapper.has-error {
-  border-color: #ef4444; /* Red-500 */
+  border-color: #ef4444;
 }
 
 .input-wrapper.has-error:focus-within {
@@ -452,7 +410,7 @@ export default {
 
 .input-icon {
   padding-left: 0.75rem;
-  color: #9ca3af; /* Gray-400 */
+  color: #9ca3af;
   display: flex;
   align-items: center;
 }
@@ -503,68 +461,6 @@ export default {
   margin-top: 0.375rem;
 }
 
-/* 辅助选项 */
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  display: none;
-}
-
-.checkbox-custom {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  margin-right: 0.5rem;
-  position: relative;
-  transition: all 0.2s;
-}
-
-.checkbox-label input:checked + .checkbox-custom {
-  background-color: #4f46e5;
-  border-color: #4f46e5;
-}
-
-.checkbox-label input:checked + .checkbox-custom::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 2px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.checkbox-text {
-  font-size: 0.875rem;
-  color: #4b5563;
-}
-
-.forgot-link {
-  font-size: 0.875rem;
-  color: #4f46e5;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-/* 全局错误提示框 */
 .alert-box {
   background-color: #fef2f2;
   border: 1px solid #fee2e2;
@@ -584,11 +480,10 @@ export default {
   flex-shrink: 0;
 }
 
-/* 提交按钮 */
 .submit-btn {
   width: 100%;
   padding: 0.75rem;
-  background-color: #4f46e5;
+  background-color: #f59e0b; /* Amber-500 */
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -603,7 +498,7 @@ export default {
 }
 
 .submit-btn:hover:not(:disabled) {
-  background-color: #4338ca;
+  background-color: #d97706; /* Amber-600 */
   transform: translateY(-1px);
 }
 
@@ -612,7 +507,7 @@ export default {
 }
 
 .submit-btn:disabled {
-  background-color: #a5b4fc;
+  background-color: #fcd34d;
   cursor: not-allowed;
 }
 
@@ -629,26 +524,33 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* 注册引导 */
-.register-prompt {
+.back-link-container {
   margin-top: 1.5rem;
   text-align: center;
-  font-size: 0.875rem;
+}
+
+.back-link {
+  background: none;
+  border: none;
   color: #6b7280;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  transition: color 0.2s;
 }
 
-.register-prompt a {
-  color: #4f46e5;
-  text-decoration: none;
-  font-weight: 600;
-  margin-left: 0.25rem;
+.back-link:hover {
+  color: #1f2937;
 }
 
-.register-prompt a:hover {
-  text-decoration: underline;
+.back-link svg {
+  width: 16px;
+  height: 16px;
 }
 
-/* 响应式适配 */
 @media (max-width: 768px) {
   .login-card {
     flex-direction: column;

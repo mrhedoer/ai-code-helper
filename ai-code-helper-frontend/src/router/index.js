@@ -3,6 +3,8 @@ import ChatRoom from '../components/ChatRoom.vue'
 import AdminLogin from '../components/AdminLogin.vue'
 import AdminDashboard from '../components/AdminDashboard.vue'
 import UserLogin from '../components/UserLogin.vue'
+import UserRegister from '../components/UserRegister.vue'
+import ForgotPassword from '../components/ForgotPassword.vue'
 import LandingPage from '../components/LandingPage.vue'
 
 const routes = [
@@ -21,6 +23,16 @@ const routes = [
     path: '/login',
     name: 'UserLogin',
     component: UserLogin
+  },
+  {
+    path: '/register',
+    name: 'UserRegister',
+    component: UserRegister
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
   },
   {
     path: '/admin/login',

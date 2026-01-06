@@ -1,22 +1,81 @@
 package com.hejunhao.aicodehelper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
+    @Autowired
+    private UserRepository userRepository;
+
     // 简单的token存储（生产环境应该使用Redis或数据库）
     private final Map<String, String> validTokens = new HashMap<>();
 
-    // 默认用户账号
-    private static final String DEFAULT_USERNAME = "hejunhao";
-    private static final String DEFAULT_PASSWORD = "123456";
+    /**
+     * 用户注册
+     */
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, String> registerRequest) {
+        String username = registerRequest.get("username");
+        String password = registerRequest.get("password");
+        String email = registerRequest.get("email");
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (userRepository.findByUsername(username).isPresent()) {
+            response.put("success", false);
+            response.put("message", "用户名已存在");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (email != null && !email.isEmpty() && userRepository.findByEmail(email).isPresent()) {
+            response.put("success", false);
+            response.put("message", "邮箱已被注册");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        UserEntity newUser = new UserEntity(username, password, email);
+        userRepository.save(newUser);
+
+        response.put("success", true);
+        response.put("message", "注册成功");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 忘记密码 (重置密码)
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody Map<String, String> resetRequest) {
+        String username = resetRequest.get("username");
+        String newPassword = resetRequest.get("newPassword");
+        // 实际应用中应该验证邮箱或手机号，这里简化为直接根据用户名重置
+
+        Map<String, Object> response = new HashMap<>();
+        Optional<UserEntity> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isPresent()) {
+            UserEntity user = userOpt.get();
+            user.setPassword(newPassword);
+            userRepository.save(user);
+
+            response.put("success", true);
+            response.put("message", "密码重置成功");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("success", false);
+            response.put("message", "用户不存在");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
     /**
      * 用户登录
@@ -26,19 +85,11 @@ public class UserController {
         String username = loginRequest.get("username");
         String password = loginRequest.get("password");
 
-        // 添加日志用于调试
-        System.out.println("=== 用户登录请求 ===");
-        System.out.println("收到的用户名: [" + username + "]");
-        System.out.println("收到的密码: [" + password + "]");
-        System.out.println("期望的用户名: [" + DEFAULT_USERNAME + "]");
-        System.out.println("期望的密码: [" + DEFAULT_PASSWORD + "]");
-        System.out.println("用户名匹配: " + DEFAULT_USERNAME.equals(username));
-        System.out.println("密码匹配: " + DEFAULT_PASSWORD.equals(password));
-        System.out.println("====================");
-
         Map<String, Object> response = new HashMap<>();
 
-        if (DEFAULT_USERNAME.equals(username) && DEFAULT_PASSWORD.equals(password)) {
+        Optional<UserEntity> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
             // 生成token
             String token = UUID.randomUUID().toString();
             validTokens.put(token, username);
@@ -115,4 +166,3 @@ public class UserController {
         }
     }
 }
-

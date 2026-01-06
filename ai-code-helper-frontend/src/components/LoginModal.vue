@@ -28,7 +28,7 @@
               </div>
               <div class="card-content">
                 <h3>用户登录</h3>
-                <p>访问个人中心、查看历史记录</p>
+                <p>与ai尽情地对话吧</p>
               </div>
               <div class="arrow-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,7 +47,7 @@
               </div>
               <div class="card-content">
                 <h3>管理员登录</h3>
-                <p>进入后台管理系统、系统配置</p>
+                <p>进入后台管理系统</p>
               </div>
               <div class="arrow-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
