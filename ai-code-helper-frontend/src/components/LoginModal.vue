@@ -59,9 +59,6 @@
         </div>
 
         <div class="modal-footer">
-          <button class="skip-link" @click="skipLogin">
-            暂不登录，以访客身份继续
-          </button>
         </div>
       </div>
     </div>

@@ -127,6 +127,16 @@
               还没有账户？
               <a href="#" @click.prevent="handleRegister">免费注册</a>
             </div>
+
+            <!-- 返回首页按钮 -->
+            <div class="back-link-container">
+              <button type="button" class="back-link" @click="goBack">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                返回首页
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -223,7 +233,7 @@ export default {
             localStorage.removeItem('savedUsername')
           }
 
-          const redirect = this.$route.query.redirect || '/'
+          const redirect = this.$route.query.redirect || '/chat'
           this.$router.push(redirect)
         } else {
           this.errorMessage = response.data.message || '登录失败，请检查账号信息'
@@ -248,6 +258,9 @@ export default {
     handleRegister() {
       // TODO: Implement register logic
       console.log('Register clicked')
+    },
+    goBack() {
+      this.$router.push('/')
     }
   }
 }
@@ -374,6 +387,33 @@ export default {
 .form-header p {
   color: #6b7280; /* Gray-500 */
   font-size: 0.95rem;
+}
+
+.back-link-container {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #1f2937;
+}
+
+.back-link svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* 表单控件 */

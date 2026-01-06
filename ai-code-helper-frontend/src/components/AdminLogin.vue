@@ -104,9 +104,7 @@ export default {
       this.errorMessage = ''
       this.isLoading = true
 
-      // 模拟一点延迟，让loading动画展示出来，提升用户体验
-      // 实际项目中如果API很快可以去掉这个
-      // await new Promise(resolve => setTimeout(resolve, 500))
+
 
       try {
         const response = await axios.post(

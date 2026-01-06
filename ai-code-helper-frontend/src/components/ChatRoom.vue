@@ -19,18 +19,16 @@
           <span class="tag-label">会话 ID</span>
           <span class="tag-value">{{ memoryId }}</span>
         </div>
-        <button @click="showLoginModal = true" class="login-btn">
+        <button @click="handleLogout" class="login-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
-          <span>登录 / 注册</span>
+          <span>退出登录</span>
         </button>
       </div>
     </header>
-
-    <!-- 登录入口对话框 -->
-    <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
 
     <!-- 消息列表区域 -->
     <div class="messages-area" ref="messagesContainer">
@@ -103,15 +101,13 @@
 
 <script>
 import MessageInput from './MessageInput.vue'
-import LoginModal from './LoginModal.vue'
 import { generateMemoryId } from '../utils/memoryId'
 import { getApiUrl } from '../config/api'
 
 export default {
   name: 'ChatRoom',
   components: {
-    MessageInput,
-    LoginModal
+    MessageInput
   },
   data() {
     return {
@@ -119,14 +115,12 @@ export default {
       messages: [],
       isLoading: false,
       isTyping: false,
-      eventSource: null,
-      showLoginModal: false
+      eventSource: null
     }
   },
   mounted() {
     this.memoryId = generateMemoryId()
     this.addWelcomeMessage()
-    this.checkLoginStatus()
   },
   beforeUnmount() {
     if (this.eventSource) {
@@ -134,12 +128,10 @@ export default {
     }
   },
   methods: {
-    checkLoginStatus() {
-      const userToken = sessionStorage.getItem('userToken')
-      const adminToken = sessionStorage.getItem('adminToken')
-      if (!userToken && !adminToken) {
-        this.showLoginModal = true
-      }
+    handleLogout() {
+      sessionStorage.removeItem('userToken')
+      sessionStorage.removeItem('username')
+      this.$router.push('/login')
     },
     addWelcomeMessage() {
       this.messages.push({

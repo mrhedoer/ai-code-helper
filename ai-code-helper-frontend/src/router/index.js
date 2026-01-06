@@ -3,12 +3,19 @@ import ChatRoom from '../components/ChatRoom.vue'
 import AdminLogin from '../components/AdminLogin.vue'
 import AdminDashboard from '../components/AdminDashboard.vue'
 import UserLogin from '../components/UserLogin.vue'
+import LandingPage from '../components/LandingPage.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: ChatRoom
+    name: 'LandingPage',
+    component: LandingPage
+  },
+  {
+    path: '/chat',
+    name: 'ChatRoom',
+    component: ChatRoom,
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -35,14 +42,21 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = sessionStorage.getItem('adminToken')
-
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/admin/login')
+  if (to.path.startsWith('/admin')) {
+    const isAuthenticated = sessionStorage.getItem('adminToken')
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      next('/admin/login')
+    } else {
+      next()
+    }
   } else {
-    next()
+    const isAuthenticated = sessionStorage.getItem('userToken')
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      next('/login')
+    } else {
+      next()
+    }
   }
 })
 
 export default router
-
