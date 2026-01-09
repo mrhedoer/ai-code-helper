@@ -103,6 +103,9 @@
 import MessageInput from './MessageInput.vue'
 import { generateMemoryId } from '../utils/memoryId'
 import { getApiUrl } from '../config/api'
+import MarkdownIt from 'markdown-it'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/atom-one-dark.css'
 
 export default {
   name: 'ChatRoom',
@@ -115,8 +118,27 @@ export default {
       messages: [],
       isLoading: false,
       isTyping: false,
-      eventSource: null
+      eventSource: null,
+      md: null
     }
+  },
+  created() {
+    this.md = new MarkdownIt({
+      html: false,
+      linkify: true,
+      typographer: true,
+      highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return '<pre class="hljs"><code>' +
+                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                   '</code></pre>';
+          } catch (__) {}
+        }
+
+        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+      }
+    })
   },
   mounted() {
     this.memoryId = generateMemoryId()
@@ -252,9 +274,8 @@ export default {
     },
 
     formatMessage(content) {
-      // 不再使用 replace(/\n/g, '<br>')，而是依赖 CSS 的 white-space: pre-wrap
-      // 这样可以保留代码缩进等格式
-      return content
+      if (!content) return ''
+      return this.md.render(content)
     },
 
     formatTime(timestamp) {
@@ -476,8 +497,94 @@ export default {
 
 .bubble-content {
   font-size: 0.95rem;
-  white-space: pre-wrap; /* 关键：保留换行和空格 */
   word-wrap: break-word;
+  line-height: 1.6;
+}
+
+/* Markdown 样式适配 */
+.bubble-content :deep(p) {
+  margin: 0.5em 0;
+}
+
+.bubble-content :deep(p:first-child) {
+  margin-top: 0;
+}
+
+.bubble-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.bubble-content :deep(pre) {
+  background: #282c34;
+  border-radius: 6px;
+  padding: 1em;
+  margin: 0.8em 0;
+  overflow-x: auto;
+}
+
+.bubble-content :deep(code) {
+  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+.bubble-content :deep(pre code) {
+  background: transparent;
+  padding: 0;
+  color: #abb2bf;
+  border-radius: 0;
+}
+
+.bubble-content :deep(ul), .bubble-content :deep(ol) {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.bubble-content :deep(li) {
+  margin: 0.25em 0;
+}
+
+.bubble-content :deep(a) {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.bubble-content :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.bubble-content :deep(blockquote) {
+  border-left: 4px solid #e5e7eb;
+  margin: 0.5em 0;
+  padding-left: 1em;
+  color: #6b7280;
+}
+
+/* 用户消息中的 Markdown 样式调整（深色背景适配） */
+.message-row.user .bubble-content :deep(code) {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.message-row.user .bubble-content :deep(pre) {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.message-row.user .bubble-content :deep(pre code) {
+  background: transparent;
+  color: #e0e7ff;
+}
+
+.message-row.user .bubble-content :deep(a) {
+  color: #e0e7ff;
+  text-decoration: underline;
+}
+
+.message-row.user .bubble-content :deep(blockquote) {
+  border-left-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .bubble-meta {

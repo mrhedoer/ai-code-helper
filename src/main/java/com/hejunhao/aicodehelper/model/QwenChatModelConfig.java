@@ -1,7 +1,9 @@
 package com.hejunhao.aicodehelper.model;
 
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
+import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.listener.ChatModelListener;
 import jakarta.annotation.Resource;
 import lombok.Data;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,12 +24,21 @@ public class QwenChatModelConfig {
     private String apiKey;
     @Resource
     private ChatModelListener chatModelListener;
+
     @Bean
     public ChatModel myQwenChatModel(){
         return QwenChatModel.builder()
                 .apiKey(apiKey)
                 .modelName(modelName)
                 .listeners(Collections.singletonList(chatModelListener))
+                .build();
+    }
+
+    @Bean("customQwenStreamingChatModel")
+    public StreamingChatModel qwenStreamingChatModel() {
+        return QwenStreamingChatModel.builder()
+                .apiKey(apiKey)
+                .modelName(modelName)
                 .build();
     }
 }
