@@ -1,21 +1,35 @@
 package com.hejunhao.aicodehelper.tools;
 
+import com.hejunhao.aicodehelper.InterviewQuestionEntity;
+import com.hejunhao.aicodehelper.InterviewQuestionRepository;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class InterviewQuestionTool {
 
-    // 本地面试题库
-    private static final Map<String, List<String>> QUESTION_BANK = new HashMap<>();
+    private final InterviewQuestionRepository repository;
 
-    static {
+    @PostConstruct
+    public void init() {
+        if (repository.count() > 0) {
+            return;
+        }
+
+        log.info("初始化面试题库到数据库...");
+        Map<String, List<String>> initialData = new HashMap<>();
+
         // Java相关
-        QUESTION_BANK.put("java", Arrays.asList(
+        initialData.put("java", Arrays.asList(
                 "1. 什么是面向对象编程？请说明其三大特性。",
                 "2. Java中的==和equals()有什么区别？",
                 "3. 什么是Java中的多态？请举例说明。",
@@ -29,7 +43,7 @@ public class InterviewQuestionTool {
         ));
 
         // Redis相关
-        QUESTION_BANK.put("redis", Arrays.asList(
+        initialData.put("redis", Arrays.asList(
                 "1. Redis支持哪些数据类型？",
                 "2. Redis的持久化机制有哪些？RDB和AOF的区别是什么？",
                 "3. 什么是Redis的缓存穿透、缓存击穿和缓存雪崩？如何解决？",
@@ -43,7 +57,7 @@ public class InterviewQuestionTool {
         ));
 
         // MySQL相关
-        QUESTION_BANK.put("mysql", Arrays.asList(
+        initialData.put("mysql", Arrays.asList(
                 "1. 什么是索引？MySQL有哪些类型的索引？",
                 "2. 什么是B+树？为什么MySQL使用B+树作为索引？",
                 "3. 什么是事务？ACID特性分别是什么？",
@@ -57,7 +71,7 @@ public class InterviewQuestionTool {
         ));
 
         // Spring相关
-        QUESTION_BANK.put("spring", Arrays.asList(
+        initialData.put("spring", Arrays.asList(
                 "1. 什么是IoC和DI？它们有什么区别？",
                 "2. Spring Bean的生命周期是怎样的？",
                 "3. Spring中有哪些Bean的作用域？",
@@ -71,7 +85,7 @@ public class InterviewQuestionTool {
         ));
 
         // 多线程相关
-        QUESTION_BANK.put("多线程", Arrays.asList(
+        initialData.put("多线程", Arrays.asList(
                 "1. 进程和线程的区别是什么？",
                 "2. 如何创建线程？有哪些方式？",
                 "3. 什么是线程池？线程池的核心参数有哪些？",
@@ -85,7 +99,7 @@ public class InterviewQuestionTool {
         ));
 
         // JVM相关
-        QUESTION_BANK.put("jvm", Arrays.asList(
+        initialData.put("jvm", Arrays.asList(
                 "1. JVM的内存结构是怎样的？",
                 "2. 什么是类加载机制？类加载的过程是怎样的？",
                 "3. 什么是双亲委派模型？为什么要使用双亲委派模型？",
@@ -97,39 +111,46 @@ public class InterviewQuestionTool {
                 "9. 什么是逃逸分析？",
                 "10. JVM的参数有哪些？如何配置？"
         ));
+
+        List<InterviewQuestionEntity> entities = new ArrayList<>();
+        initialData.forEach((category, questions) -> {
+            questions.forEach(q -> entities.add(new InterviewQuestionEntity(category, q)));
+        });
+
+        repository.saveAll(entities);
+        log.info("面试题库初始化完成，共 {} 条题目", entities.size());
     }
 
-    @Tool(name = "interviewQuestionSearch", value = "Retrieves relevant interview questions from local question bank.\n" +
+    @Tool(name = "interviewQuestionSearch", value = "Retrieves relevant interview questions from database question bank.\n" +
             "Use this tool when the user asks for interview questions about specific technologies,\n" +
             "programming concepts, or job-related topics. Supported topics include: Java, Redis, MySQL, Spring, 多线程, JVM.")
     public String searchInterviewQuestions(@P(value = "the keyword to search") String keyword) {
         try {
             String normalizedKeyword = keyword.toLowerCase().trim();
 
-            // 精确匹配
-            if (QUESTION_BANK.containsKey(normalizedKeyword)) {
-                List<String> questions = QUESTION_BANK.get(normalizedKeyword);
-                return String.format("关于【%s】的常见面试题：\n\n%s",
-                        keyword, String.join("\n\n", questions));
+            // 1. 尝试精确匹配分类
+            List<InterviewQuestionEntity> byCategory = repository.findByCategoryIgnoreCase(normalizedKeyword);
+            if (!byCategory.isEmpty()) {
+                String questionsStr = byCategory.stream()
+                        .map(InterviewQuestionEntity::getQuestion)
+                        .collect(Collectors.joining("\n\n"));
+                return String.format("关于【%s】的常见面试题：\n\n%s", keyword, questionsStr);
             }
 
-            // 模糊匹配
-            List<String> allQuestions = new ArrayList<>();
-            for (Map.Entry<String, List<String>> entry : QUESTION_BANK.entrySet()) {
-                if (entry.getKey().contains(normalizedKeyword) ||
-                        normalizedKeyword.contains(entry.getKey())) {
-                    allQuestions.addAll(entry.getValue());
-                }
+            // 2. 模糊匹配（分类或问题内容）
+            List<InterviewQuestionEntity> fuzzyMatches = repository.findByCategoryContainingIgnoreCaseOrQuestionContainingIgnoreCase(normalizedKeyword, normalizedKeyword);
+
+            if (!fuzzyMatches.isEmpty()) {
+                String questionsStr = fuzzyMatches.stream()
+                        .map(InterviewQuestionEntity::getQuestion)
+                        .collect(Collectors.joining("\n\n"));
+                return String.format("关于【%s】的相关面试题：\n\n%s", keyword, questionsStr);
             }
 
-            if (!allQuestions.isEmpty()) {
-                return String.format("关于【%s】的相关面试题：\n\n%s",
-                        keyword, String.join("\n\n", allQuestions));
-            }
-
-            // 未找到相关题目
+            // 3. 未找到，返回所有可用分类
+            List<String> categories = repository.findDistinctCategories();
             return String.format("暂未找到关于【%s】的面试题。\n\n当前支持的主题包括：%s",
-                    keyword, String.join(", ", QUESTION_BANK.keySet()));
+                    keyword, String.join(", ", categories));
 
         } catch (Exception e) {
             log.error("获取面试题失败", e);

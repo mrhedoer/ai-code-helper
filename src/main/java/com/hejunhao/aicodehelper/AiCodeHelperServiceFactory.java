@@ -28,6 +28,10 @@ public class AiCodeHelperServiceFactory {
 
     @Resource
     private StreamingChatModel qwenStreamingChatModel;
+
+    @Resource
+    private InterviewQuestionTool interviewQuestionTool;
+
     @Bean
     public ChatMemoryProvider chatMemoryProvider() {
         return memoryId -> MessageWindowChatMemory.builder()
@@ -44,7 +48,7 @@ public class AiCodeHelperServiceFactory {
                 .streamingChatModel(qwenStreamingChatModel) //流式输出
                 .chatMemoryProvider(chatMemoryProvider()) // 指定ChatMemoryProvider
                 .contentRetriever(contentRetriever)// RAG 检索增强生成
-                .tools(new InterviewQuestionTool())// 工具调用
+                .tools(interviewQuestionTool)// 工具调用
                 .toolProvider(mcpToolProvider)// MCP 工具调用
                 .build();
     }
