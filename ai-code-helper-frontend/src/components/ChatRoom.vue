@@ -1,6 +1,5 @@
 <template>
   <div class="chat-container">
-    <!-- 顶部导航栏 -->
     <header class="chat-header">
       <div class="header-left">
         <div class="brand-logo">
@@ -59,7 +58,8 @@
 
           <!-- 消息内容 -->
           <div class="message-bubble">
-            <div class="bubble-content" v-html="formatMessage(message.content)"></div>
+            <!-- 注意：这里添加了 markdown-body 类，方便后续扩展样式 -->
+            <div class="bubble-content markdown-body" v-html="formatMessage(message.content)"></div>
             <div class="bubble-meta">{{ formatTime(message.timestamp) }}</div>
           </div>
         </div>
@@ -123,20 +123,31 @@ export default {
     }
   },
   created() {
+
+    const escapeHtml = (unsafe) => {
+      return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+    }
+
     this.md = new MarkdownIt({
       html: false,
       linkify: true,
       typographer: true,
-      highlight: function (str, lang) {
+      highlight: (str, lang) => {
         if (lang && hljs.getLanguage(lang)) {
           try {
             return '<pre class="hljs"><code>' +
-                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-                   '</code></pre>';
-          } catch (__) {}
+                hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
+                '</code></pre>';
+          } catch (__) {
+          }
         }
-
-        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+        // 使用自定义的 escapeHtml
+        return '<pre class="hljs"><code>' + escapeHtml(str) + '</code></pre>';
       }
     })
   },
@@ -213,47 +224,43 @@ export default {
     createSSEConnection(url, aiMessage, resolve, reject) {
       this.eventSource = new EventSource(url)
 
+      // 标记是否是第一次收到有效内容
+      let isFirstChunk = true;
+
       this.eventSource.onmessage = (event) => {
         if (event.data === '[DONE]') {
           this.finishAIResponse(aiMessage)
-          if (this.eventSource) this.eventSource.close()
           resolve()
           return
         }
 
         if (event.data) {
-          if (aiMessage.content === '正在思考...') {
-            aiMessage.content = event.data
-          } else {
-            aiMessage.content += event.data
+          // 如果是第一次收到内容，且当前内容是占位符，则清空
+          if (isFirstChunk && aiMessage.content === '正在思考...') {
+            aiMessage.content = '';
+            isFirstChunk = false;
           }
-          this.scrollToBottom()
+
+          aiMessage.content += event.data;
+
+
           this.$forceUpdate()
+          this.scrollToBottom()
         }
       }
 
       this.eventSource.onerror = (error) => {
-        if (aiMessage.content && aiMessage.content !== '正在思考...' && aiMessage.content.length > 0) {
+        // 只有在完全没有收到内容时才报错，否则视为连接中断但已接收部分数据
+        if (aiMessage.content === '正在思考...') {
+          aiMessage.content = '连接出现错误，请稍后重试。'
+          reject(error)
+        } else {
+          // 已经有内容了，就当作结束处理
           this.finishAIResponse(aiMessage)
           resolve()
-        } else {
-          aiMessage.content = '连接出现错误，请稍后重试。'
-          if (this.eventSource) this.eventSource.close()
         }
-        reject(error)
+        if (this.eventSource) this.eventSource.close()
       }
-
-      setTimeout(() => {
-        if (this.eventSource && this.eventSource.readyState !== EventSource.CLOSED) {
-          if (aiMessage.content && aiMessage.content !== '正在思考...' && aiMessage.content.length > 0) {
-            this.finishAIResponse(aiMessage)
-            resolve()
-          } else {
-            aiMessage.content = '请求超时，请稍后重试。'
-          }
-          if (this.eventSource) this.eventSource.close()
-        }
-      }, 30000)
     },
 
     finishAIResponse(aiMessage) {
@@ -275,6 +282,7 @@ export default {
 
     formatMessage(content) {
       if (!content) return ''
+      // 增加安全防护，防止 XSS
       return this.md.render(content)
     },
 
@@ -298,7 +306,8 @@ export default {
 </script>
 
 <style scoped>
-/* 全局变量 */
+
+
 :root {
   --primary-color: #6366f1;
   --primary-light: #e0e7ff;
@@ -316,7 +325,6 @@ export default {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* 顶部导航栏 */
 .chat-header {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -445,7 +453,6 @@ export default {
   flex-direction: row-reverse;
 }
 
-/* 头像样式 */
 .avatar-icon {
   width: 36px;
   height: 36px;
@@ -465,7 +472,7 @@ export default {
   background: white;
   color: #6366f1;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .avatar-icon.user {
@@ -479,8 +486,9 @@ export default {
   padding: 1rem;
   border-radius: 12px;
   position: relative;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   line-height: 1.6;
+  overflow: hidden; /* 防止代码块溢出圆角 */
 }
 
 .message-row.ai .message-bubble {
@@ -501,7 +509,8 @@ export default {
   line-height: 1.6;
 }
 
-/* Markdown 样式适配 */
+
+
 .bubble-content :deep(p) {
   margin: 0.5em 0;
 }
@@ -515,28 +524,33 @@ export default {
 }
 
 .bubble-content :deep(pre) {
-  background: #282c34;
   border-radius: 6px;
-  padding: 1em;
+  padding: 0;
   margin: 0.8em 0;
   overflow-x: auto;
 }
 
-.bubble-content :deep(code) {
-  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+/* 确保 hljs 容器充满 pre */
+.bubble-content :deep(pre code.hljs) {
+  display: block;
+  padding: 1em;
+  border-radius: 6px;
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
   font-size: 0.9em;
-  background: rgba(0, 0, 0, 0.05);
+  line-height: 1.5;
+}
+
+/* 行内代码样式 (非代码块) */
+.bubble-content :deep(:not(pre) > code) {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.06);
+  color: #c7254e; /* 类似 GitHub 的行内代码红 */
   padding: 0.2em 0.4em;
   border-radius: 3px;
 }
 
-.bubble-content :deep(pre code) {
-  background: transparent;
-  padding: 0;
-  color: #abb2bf;
-  border-radius: 0;
-}
-
+/* 列表和链接 */
 .bubble-content :deep(ul), .bubble-content :deep(ol) {
   padding-left: 1.5em;
   margin: 0.5em 0;
@@ -562,18 +576,21 @@ export default {
   color: #6b7280;
 }
 
-/* 用户消息中的 Markdown 样式调整（深色背景适配） */
+/*
+   用户消息中的 Markdown 样式调整
+   (用户发送的消息通常不包含复杂代码块，保持简单即可)
+*/
 .message-row.user .bubble-content :deep(code) {
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
 .message-row.user .bubble-content :deep(pre) {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3); /* 用户侧代码块保持半透明深色 */
 }
 
-.message-row.user .bubble-content :deep(pre code) {
-  background: transparent;
+.message-row.user .bubble-content :deep(pre code.hljs) {
+  background: transparent; /* 覆盖主题背景，使用上面的半透明 */
   color: #e0e7ff;
 }
 
@@ -598,7 +615,7 @@ export default {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* 输入中动画 */
+/* 输入中动画 (保持不变) */
 .typing-dots {
   display: flex;
   align-items: center;
@@ -614,20 +631,35 @@ export default {
   animation: bounce 1.4s infinite ease-in-out both;
 }
 
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* 底部输入区 */
+/* 底部输入区 (保持不变) */
 .input-area {
   background: white;
   padding: 1rem 1.5rem 1.5rem;

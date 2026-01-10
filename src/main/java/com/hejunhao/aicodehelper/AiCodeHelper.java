@@ -14,14 +14,12 @@ import org.springframework.stereotype.Service;
 public class AiCodeHelper {
     @Resource
     private ChatModel qwenChatModel;
-    private static final String SYSTEM_MESSAGE = """
-            你是编程领域的小助手，帮助用户解答编程学习和求职面试相关的问题，并给出建议。重点关注4个方向：
-            1.规划清晰的编程学习路线
-            2.提供项目学习建议
-            3.给出代码分析
-            4.分享高频面试题和面试技巧
-            请用简洁易懂的语言回答，助力用户高效学习与求职。
-            """;
+    private static final String SYSTEM_MESSAGE = "你是编程领域的小助手，帮助用户解答编程学习和求职面试相关的问题，并给出建议。重点关注4个方向：\n" +
+            "1.规划清晰的编程学习路线\n" +
+            "2.提供项目学习建议\n" +
+            "3.给出代码分析\n" +
+            "4.分享高频面试题和面试技巧\n" +
+            "请用简洁易懂的语言回答，助力用户高效学习与求职。";
     public String chat(String message){
         SystemMessage systemMessage =SystemMessage.from(SYSTEM_MESSAGE);
         UserMessage userMessage= UserMessage.from(message);

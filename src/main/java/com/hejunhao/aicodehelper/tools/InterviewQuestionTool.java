@@ -99,11 +99,9 @@ public class InterviewQuestionTool {
         ));
     }
 
-    @Tool(name = "interviewQuestionSearch", value = """
-            Retrieves relevant interview questions from local question bank.
-            Use this tool when the user asks for interview questions about specific technologies,
-            programming concepts, or job-related topics. Supported topics include: Java, Redis, MySQL, Spring, 多线程, JVM.
-            """)
+    @Tool(name = "interviewQuestionSearch", value = "Retrieves relevant interview questions from local question bank.\n" +
+            "Use this tool when the user asks for interview questions about specific technologies,\n" +
+            "programming concepts, or job-related topics. Supported topics include: Java, Redis, MySQL, Spring, 多线程, JVM.")
     public String searchInterviewQuestions(@P(value = "the keyword to search") String keyword) {
         try {
             String normalizedKeyword = keyword.toLowerCase().trim();
