@@ -19,7 +19,7 @@ public class UserEntity {
     private String username;
 
     @Column(nullable = false)
-    private String password; // In a real app, this should be hashed
+    private String password; // Hashed password
 
     @Column(unique = true)
     private String email;

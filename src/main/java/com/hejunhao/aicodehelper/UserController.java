@@ -1,5 +1,6 @@
 package com.hejunhao.aicodehelper;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +43,9 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        UserEntity newUser = new UserEntity(username, password, email);
+        // Hash the password
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        UserEntity newUser = new UserEntity(username, hashedPassword, email);
         userRepository.save(newUser);
 
         response.put("success", true);
@@ -64,7 +67,9 @@ public class UserController {
 
         if (userOpt.isPresent()) {
             UserEntity user = userOpt.get();
-            user.setPassword(newPassword);
+            // Hash the new password
+            String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+            user.setPassword(hashedPassword);
             userRepository.save(user);
 
             response.put("success", true);
@@ -89,7 +94,7 @@ public class UserController {
 
         Optional<UserEntity> userOpt = userRepository.findByUsername(username);
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        if (userOpt.isPresent() && BCrypt.checkpw(password, userOpt.get().getPassword())) {
             // 生成token
             String token = UUID.randomUUID().toString();
             validTokens.put(token, username);
