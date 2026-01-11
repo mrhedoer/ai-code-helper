@@ -98,7 +98,6 @@
             <artifactId>langchain4j-reactor</artifactId>
             <version>1.1.0-beta7</version>
         </dependency>
-        <!-- Password Hashing -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>

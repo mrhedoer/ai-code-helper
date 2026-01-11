@@ -1,6 +1,6 @@
 # 🤖 AI 编程小助手
 
-> 基于 Spring Boot + Vue3 + LangChain4j + 通义千问 的智能编程学习与求职辅导助手
+> 基于 Spring Boot 3.5+ Vue3 + LangChain4j + 通义千问 的智能编程学习与求职辅导助手
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.3.4-4FC08D.svg)](https://vuejs.org/)
@@ -11,13 +11,13 @@
 
 | 特性 | 说明 |
 |------|------|
-| 🤖 **AI 能力** | 集成 LangChain4j + 通义千问，支持对话、嵌入、流式输出 |
-| ⚡ **实时交互** | SSE 流式输出，打字机效果，响应迅速 |
-| 🛡️ **安全防护** | 输入安全检测（Guardrail），智能拦截敏感内容 |
-| 🔌 **MCP 生态** |集成 Model Context Protocol，连接联网搜索等外部工具 |
-| 📊 **后台管理** | 全功能管理员仪表盘，数据可视化与内容管控 |
-| 📚 **职场知识库** | 内置面试、简历、Onboarding 等程序员专属知识库 |
-| 👤 **用户系统** | 完善的登录、注册、找回密码与会话管理流程 |
+| 🤖 **强大的 AI 引擎** | 集成 **LangChain4j**，默认使用 **Qwen-Max** 模型提供顶尖的对话与流式响应能力。 |
+| 🧠 **RAG 检索增强** | 基于 `InMemoryEmbeddingStore` 和 **Text-Embedding-V4** 模型。系统启动时自动加载 `src/main/resources/docs` 下的 Markdown 文档，构建私有知识库。 |
+| 🔌 **MCP 协议集成** | 实现了 **Model Context Protocol (MCP)** 客户端，通过智谱 BigModel 提供的 MCP 服务接入 **联网搜索 (Web Search)** 能力，赋予 AI 实时信息获取权限。 |
+| 🛡️ **安全护栏 (Guardrails)** | 内置 `SafeInputGuardrail`，在 LLM 处理前对用户输入进行敏感词（如 "kill", "evil"）检测与拦截，确保交互安全。 |
+| ⚡ **流式交互体验** | 后端采用 SSE (Server-Sent Events) 推送，前端结合打字机效果，实现低延迟的实时对话体验。 |
+| 🎨 **富文本渲染** | 前端集成 `markdown-it` 和 `highlight.js`，完美支持 Markdown 格式解析与代码语法高亮。 |
+| 📊 **全功能后台** | 提供管理员仪表盘，支持会话审计、消息检索与敏感内容管控。 |
 
 ## 📸 功能预览
 
@@ -274,10 +274,9 @@ npm run build
 
 ## 🛠️ 开发建议
 
-- ✅ 确保 CORS 配置允许前端访问
-- ✅ Windows 环境建议使用管理员权限首次运行
-- ✅ 建议使用 IDEA 进行开发
-- ✅ 开发时打开浏览器控制台便于调试
+- **RAG 文档更新**：直接将 Markdown 文件放入 `src/main/resources/docs`，重启服务即可自动生效。
+- **敏感词管理**：修改 `SafeInputGuardrail.java` 中的 `sensitiveWords` 集合。
+- **Prompt 调整**：修改 `src/main/resources/system-prompt.txt` 调整 AI 人设。
 
 ## 📚 技术文档
 
