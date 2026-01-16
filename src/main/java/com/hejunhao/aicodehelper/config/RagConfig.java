@@ -45,7 +45,6 @@ public class RagConfig {
     public ApplicationRunner ingestDocs(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
         return args -> {
             try {
-                // Load documents from src/main/resources/docs
                 Path docsPath = Paths.get("src", "main", "resources", "docs");
                 if (!docsPath.toFile().exists()) {
                     log.warn("Docs directory not found: {}", docsPath.toAbsolutePath());
