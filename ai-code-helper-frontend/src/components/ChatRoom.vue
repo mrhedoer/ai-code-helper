@@ -87,10 +87,58 @@
     <!-- 底部输入区域 -->
     <div class="input-area">
       <div class="input-wrapper">
-        <MessageInput
-            @send-message="handleSendMessage"
-            :disabled="isLoading"
-        />
+        <!-- 附件列表显示区域 -->
+        <div v-if="uploadedFiles.length > 0" class="file-list-preview">
+          <div v-for="(file, index) in uploadedFiles" :key="index" class="file-chip">
+            <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <span class="file-name" :title="file.name">{{ file.name }}</span>
+            <button class="remove-file-btn" @click="removeFile(index)" title="删除附件">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="input-controls">
+          <!-- 上传按钮 -->
+          <button class="action-btn upload-btn" @click="triggerFileUpload" :disabled="isLoading" title="上传文件">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          
+          <!-- 隐藏的文件输入框 -->
+          <input 
+            type="file" 
+            ref="fileInput" 
+            class="hidden-file-input"
+            accept=".pdf,.doc,.docx,image/*" 
+            multiple 
+            @change="handleFileUpload" 
+          />
+          
+          <div class="message-input-container">
+            <MessageInput
+                @send-message="handleSendMessage"
+                :disabled="isLoading"
+            />
+          </div>
+          
+          <!-- 重启对话按钮 -->
+          <button class="action-btn refresh-btn" @click="handleResetChat" :disabled="isLoading" title="重启对话">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="input-footer">
         AI生成内容仅供参考，请仔细甄别
@@ -116,6 +164,7 @@ export default {
     return {
       memoryId: null,
       messages: [],
+      uploadedFiles: [],
       isLoading: false,
       isTyping: false,
       eventSource: null,
@@ -173,6 +222,38 @@ export default {
         content: '你好！我是AI编程小助手，可以帮助你解答编程学习和求职面试相关的问题。有什么问题尽管问我吧！',
         timestamp: new Date()
       })
+    },
+
+    triggerFileUpload() {
+      if (this.isLoading) return
+      this.$refs.fileInput.click()
+    },
+
+    handleFileUpload(event) {
+      const files = Array.from(event.target.files)
+      if (!files.length) return
+      
+      files.forEach(file => {
+        this.uploadedFiles.push(file)
+      })
+      
+      // 清空 input 值，允许重复上传同名文件
+      event.target.value = ''
+    },
+
+    removeFile(index) {
+      this.uploadedFiles.splice(index, 1)
+    },
+
+    handleResetChat() {
+      if (this.isLoading) return
+      
+      if (confirm('确定要刷新并重启对话吗？当前的聊天记录将会被清空。')) {
+        this.messages = []
+        this.uploadedFiles = []
+        this.memoryId = generateMemoryId()
+        this.addWelcomeMessage()
+      }
     },
 
     async handleSendMessage(message) {
@@ -659,7 +740,7 @@ export default {
   }
 }
 
-/* 底部输入区 (保持不变) */
+/* 底部输入区 */
 .input-area {
   background: white;
   padding: 1rem 1.5rem 1.5rem;
@@ -669,6 +750,118 @@ export default {
 .input-wrapper {
   max-width: 800px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.message-input-container {
+  flex: 1;
+}
+
+.action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2px; /* Slight adjustment to align with the message input visual bottom */
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  color: #6366f1;
+  border-color: #c7d2fe;
+  transform: scale(1.05);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
+}
+
+.action-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-list-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0 3.5rem; /* align roughly with the message text area */
+}
+
+.file-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: #374151;
+  animation: slideIn 0.2s ease-out;
+}
+
+.file-icon {
+  width: 14px;
+  height: 14px;
+  color: #6b7280;
+}
+
+.file-name {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  padding: 0.1rem;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.remove-file-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.remove-file-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .input-footer {
