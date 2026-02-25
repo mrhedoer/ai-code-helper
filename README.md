@@ -11,11 +11,13 @@
 
 | 特性 | 说明                                                                                                                             |
 |------|--------------------------------------------------------------------------------------------------------------------------------|
-| 🤖 **强大的 AI 引擎** | 集成 **LangChain4j**，默认使用 **Qwen-Max** 模型提供顶尖的对话与流式响应能力。                                                                         |
-| 🧠 **RAG 检索增强** | 基于 `InMemoryEmbeddingStore` 和 **Text-Embedding-V4** 模型。系统启动时自动加载 `src/main/resources/docs` 下的 Markdown 文档，构建私有知识库，并支持用户上传文件功能。 |
+| 🤖 **强大的 AI 引擎** | 集成 **LangChain4j**，默认使用 **Qwen-Max** 模型提供顶尖的对话与流式响应能力。 |
+| 🧠 **RAG 检索增强** | 基于 `InMemoryEmbeddingStore` 和 **Text-Embedding-V4** 模型。系统启动时自动加载 `src/main/resources/docs` 下的 Markdown 文档，构建私有知识库。 |
+| 🎤 **智能语音交互** | 集成 **Deepgram STT** 实现精准语音转文字，内置 **VAD（静音检测）** 功能，打造顺畅的智能语音输入体验。|
+| 📎 **多格式文件解析** | 支持左侧便捷上传 PDF、Word 文档及图片。结合会话级短期记忆，让 AI 能够精准读取并针对当前会话中的文件进行交互处理。|
 | 🔌 **MCP 协议集成** | 实现了 **Model Context Protocol (MCP)** 客户端，通过智谱 BigModel 提供的 MCP 服务接入 **联网搜索 (Web Search)** 能力，赋予 AI 实时信息获取权限。                   |
-| 🛡️ **安全护栏 (Guardrails)** | 内置 `SafeInputGuardrail`，在 LLM 处理前对用户输入进行敏感词（如 "kill", "evil"）检测与拦截，确保交互安全。                                                     |
-| ⚡ **流式交互体验** | 后端采用 SSE (Server-Sent Events) 推送，前端结合打字机效果，实现低延迟的实时对话体验。                                                                       |
+| 🛡️ **安全护栏** | 内置 `SafeInputGuardrail`，在 LLM 处理前对用户输入进行敏感词检测与拦截，确保交互安全。                                                     |
+| ⚡ **无缝交互体验** | 后端采用 SSE 推送，前端结合打字机效果，实现低延迟的实时对话体验；支持一键刷新快速重启会话，清空上下文状态。                                                                       |
 | 🎨 **富文本渲染** | 前端集成 `markdown-it` 和 `highlight.js`，完美支持 Markdown 格式解析与代码语法高亮。                                                                 |
 | 📊 **全功能后台** | 提供管理员仪表盘，支持会话审计、消息检索与敏感内容管控。                                                                                                   |
 
@@ -79,7 +81,7 @@ ai-code-helper/
 | Maven | 3.6+ |
 | Node.js | 16+ |
 | MySQL | 5.7+ (可选) |
-| API Key | 通义千问 / 智谱 GLM |
+| API Key | 通义千问 / 智谱 GLM / Deepgram |
 
 ## 🚀 快速开始
 
@@ -97,9 +99,9 @@ cd ai-code-helper
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/ai_chat_db
-    username: root
-    password: 123456
+    url: jdbc:mysql://
+    username: 
+    password: 
 
 langchain4j:
   community:
@@ -158,10 +160,10 @@ npm run dev
           ┌───────────────────┼───────────────────┐
           │                   │                   │
 ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│   通义千问API    │  │   MCP Client    │  │    RAG 引擎     │
-│   - 对话模型    │  │   - 联网搜索    │  │   - 职场知识库  │
-│   - 嵌入模型    │  │   - 外部工具    │  │   - 面试题库    │
-│   - 流式输出    │  │                 │  │                 │
+│ AI模型 & 语音引擎│  │   MCP Client    │  │    RAG 引擎     │
+│   - 通义千问    │  │   - 联网搜索    │  │  - 职场知识库   │
+│   - Deepgram STT│  │   - 外部工具    │  │  - 面试题库     │
+│                 │  │                 │  │  - 文件智能解析 │
 └─────────────────┘  └─────────────────┘  └─────────────────┘
 ```
 
@@ -229,7 +231,8 @@ npm run dev
 | `Mcpconfig` |  MCP 协议客户端配置 |
 | `AdminController` | 后台管理接口 |
 | `QwenChatModelConfig` | 通义千问模型配置 |
-| `MySqlChatMemoryStore` | 会话记忆存储 |
+| `DeepgramSttService` | Deepgram 语音识别服务 |
+| `MySqlChatMemoryStore` | 会话记忆存储及文件解析缓存 |
 | `SafeInputGuardrail` | 输入安全防护 |
 | `InterviewQuestionTool` | 面试题搜索工具 |
 | `UserController` | 用户认证接口 |

@@ -1,6 +1,24 @@
 <template>
   <div class="message-input-wrapper">
     <div class="input-group" :class="{ 'is-focused': isFocused, 'is-disabled': disabled }">
+      
+      <!-- 语音输入按钮 -->
+      <button
+        @click="toggleRecording"
+        class="mic-btn"
+        :class="{ 'is-recording': isRecording }"
+        type="button"
+        title="语音输入"
+        :disabled="disabled || isTranscribing"
+      >
+        <div v-if="isTranscribing" class="loading-spinner mic-loading"></div>
+        <svg v-else viewBox="0 0 24 24" fill="none" class="mic-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="22"></line>
+        </svg>
+      </button>
+
       <textarea
           ref="textarea"
           v-model="message"
@@ -51,7 +69,14 @@ export default {
   data() {
     return {
       message: '',
-      isFocused: false
+      isFocused: false,
+      isRecording: false,
+      isTranscribing: false,
+      mediaRecorder: null,
+      audioChunks: [],
+      audioContext: null,
+      analyser: null,
+      silenceTimer: null
     }
   },
   computed: {
@@ -105,6 +130,140 @@ export default {
 
     focus() {
       this.$refs.textarea?.focus()
+    },
+
+    async toggleRecording() {
+      if (this.isRecording) {
+        this.stopRecording()
+      } else {
+        await this.startRecording()
+      }
+    },
+
+    async startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        this.isRecording = true
+        this.audioChunks = []
+        
+        this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+        
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.audioChunks.push(event.data)
+          }
+        }
+        
+        this.mediaRecorder.onstop = async () => {
+          this.stopAudioStreams(stream)
+          await this.transcribeAudio()
+        }
+
+        this.setupVAD(stream)
+        this.mediaRecorder.start(100) // 收集音频块（100ms）
+
+      } catch (err) {
+        console.error("无法启动录音:", err)
+        alert("无法访问麦克风，请检查权限。")
+      }
+    },
+
+    stopRecording() {
+      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+        this.mediaRecorder.stop()
+      }
+      this.isRecording = false
+      if (this.silenceTimer) {
+        clearTimeout(this.silenceTimer)
+        this.silenceTimer = null
+      }
+    },
+
+    stopAudioStreams(stream) {
+      stream.getTracks().forEach(track => track.stop())
+      if (this.audioContext && this.audioContext.state !== 'closed') {
+        this.audioContext.close()
+      }
+      if (this.silenceTimer) {
+        clearTimeout(this.silenceTimer)
+        this.silenceTimer = null
+      }
+    },
+
+    setupVAD(stream) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      this.analyser = this.audioContext.createAnalyser()
+      const microphoneNode = this.audioContext.createMediaStreamSource(stream)
+      
+      this.analyser.fftSize = 256
+      microphoneNode.connect(this.analyser)
+      
+      const bufferLength = this.analyser.frequencyBinCount
+      const dataArray = new Uint8Array(bufferLength)
+      
+      const checkSilence = () => {
+        if (!this.isRecording) return
+        
+        this.analyser.getByteFrequencyData(dataArray)
+        const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength
+        
+        // 当音量低于阈值 10 时视为静音
+        if (average < 10) { 
+          if (!this.silenceTimer) {
+            this.silenceTimer = setTimeout(() => {
+              console.log("检测到2秒静音，自动停止录音...")
+              this.stopRecording()
+            }, 2000)
+          }
+        } else {
+          // 有声音，重置静音定时器
+          if (this.silenceTimer) {
+            clearTimeout(this.silenceTimer)
+            this.silenceTimer = null
+          }
+        }
+        
+        if (this.isRecording) {
+          requestAnimationFrame(checkSilence)
+        }
+      }
+      
+      checkSilence()
+    },
+
+    async transcribeAudio() {
+      if (this.audioChunks.length === 0) return
+      
+      this.isTranscribing = true
+      
+      const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' })
+      const formData = new FormData()
+      formData.append('audio', audioBlob, 'recording.webm')
+      
+      try {
+        // 请求后端的 STT 接口
+        const response = await fetch('http://localhost:8081/api/stt', {
+          method: 'POST',
+          body: formData
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (result.transcript) {
+            this.message = this.message ? this.message + ' ' + result.transcript : result.transcript
+            this.$nextTick(() => {
+              this.adjustHeight()
+              this.focus()
+            })
+          }
+        } else {
+          console.error("STT 识别失败:", await response.text())
+        }
+      } catch (error) {
+        console.error("STT 请求异常:", error)
+      } finally {
+        this.isTranscribing = false
+      }
     }
   },
 
@@ -148,11 +307,12 @@ export default {
   border: none;
   outline: none;
   background: transparent;
-  padding: 0.75rem 0 0.75rem 1rem;
+  padding: 0.75rem 0 0.75rem 0.5rem;
   font-size: 0.95rem;
   line-height: 1.5;
   resize: none;
   min-height: 24px; /* 单行高度 */
+
   max-height: 150px;
   font-family: inherit;
   color: #1f2937;
@@ -229,6 +389,51 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* 语音按钮样式 */
+.mic-btn {
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.mic-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.mic-btn.is-recording {
+  color: #ef4444; /* 红色图标表示录音中 */
+  animation: pulse 1.5s infinite;
+}
+
+.mic-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.mic-loading {
+  border-top-color: #6366f1; /* 正在识别时的加载动画颜色 */
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); color: #dc2626; }
+  100% { transform: scale(1); }
 }
 
 /* 响应式微调 */
