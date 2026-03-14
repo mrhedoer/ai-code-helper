@@ -14,7 +14,7 @@
 | 🤖 **强大的 AI 引擎** | 集成 **LangChain4j**，默认使用 **Qwen-Max** 模型提供顶尖的对话与流式响应能力。 |
 | 🧠 **RAG 检索增强** | 基于 `InMemoryEmbeddingStore` 和 **Text-Embedding-V4** 模型。系统启动时自动加载 `src/main/resources/docs` 下的 Markdown 文档，构建私有知识库。 |
 | 🎤 **智能语音交互** | 集成 **Deepgram STT** 实现精准语音转文字，内置 **VAD（静音检测）** 功能，打造顺畅的智能语音输入体验。|
-| 📎 **多格式文件解析** | 支持左侧便捷上传 PDF、Word 文档及图片。结合会话级短期记忆，让 AI 能够精准读取并针对当前会话中的文件进行交互处理。|
+| 📎 **多格式文件解析** | 集成 **Apache Tika** 支持多格式解析，支持便捷上传 PDF、Word 等文档。结合会话短期记忆让 AI 能够精准读取并基于文件内容交互。|
 | 🔌 **MCP 协议集成** | 实现了 **Model Context Protocol (MCP)** 客户端，通过智谱 BigModel 提供的 MCP 服务接入 **联网搜索 (Web Search)** 能力，赋予 AI 实时信息获取权限。                   |
 | 🛡️ **安全护栏** | 内置 `SafeInputGuardrail`，在 LLM 处理前对用户输入进行敏感词检测与拦截，确保交互安全。                                                     |
 | ⚡ **无缝交互体验** | 后端采用 SSE 推送，前端结合打字机效果，实现低延迟的实时对话体验；支持一键刷新快速重启会话，清空上下文状态。                                                                       |
@@ -102,6 +102,10 @@ spring:
     url: jdbc:mysql://
     username: 
     password: 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 langchain4j:
   community:
@@ -177,6 +181,7 @@ npm run dev
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | `/ai/chat` | GET (SSE) | 流式对话接口，参数：`memoryId`、`message` |
+| `/ai/upload` | POST | 文档上传及记忆注入接口，参数：`file`、`memoryId` |
 
 ### 👤 用户认证接口
 
