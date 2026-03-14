@@ -1,4 +1,5 @@
 package com.hejunhao.aicodehelper;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ public class ChatMessageEntity {
     @Column(name = "conversation_id")
     private String conversationId;
 
-    @Column(name = "message_content", columnDefinition = "TEXT")
+    @Column(name = "message_content", columnDefinition = "LONGTEXT")
     private String messageContent;
 
     @Column(name = "message_type")
@@ -22,7 +23,8 @@ public class ChatMessageEntity {
     private LocalDateTime createdAt;
 
     // Constructors
-    public ChatMessageEntity() {}
+    public ChatMessageEntity() {
+    }
 
     public ChatMessageEntity(String conversationId, String messageContent, String messageType) {
         this.conversationId = conversationId;

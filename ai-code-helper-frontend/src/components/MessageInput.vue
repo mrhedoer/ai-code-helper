@@ -64,6 +64,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    hasFiles: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -81,7 +85,7 @@ export default {
   },
   computed: {
     isValidMessage() {
-      return this.message.trim().length > 0
+      return this.message.trim().length > 0 || this.hasFiles
     }
   },
   methods: {

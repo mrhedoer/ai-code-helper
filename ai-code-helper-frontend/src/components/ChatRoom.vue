@@ -127,6 +127,7 @@
             <MessageInput
                 @send-message="handleSendMessage"
                 :disabled="isLoading"
+                :hasFiles="uploadedFiles.length > 0"
             />
           </div>
           
@@ -257,12 +258,22 @@ export default {
     },
 
     async handleSendMessage(message) {
-      if (!message.trim()) return
+      if (!message.trim() && this.uploadedFiles.length === 0) return
+
+      let messageContent = message;
+      if (!messageContent.trim() && this.uploadedFiles.length > 0) {
+        messageContent = "请分析我上传的文件";
+      }
+
+      let displayMessage = messageContent;
+      if (this.uploadedFiles.length > 0) {
+        displayMessage += "\n\n[附带 " + this.uploadedFiles.length + " 个文件]";
+      }
 
       this.messages.push({
         id: Date.now(),
         type: 'user',
-        content: message,
+        content: displayMessage,
         timestamp: new Date()
       })
 
@@ -270,7 +281,29 @@ export default {
       this.scrollToBottom()
 
       try {
-        await this.sendMessageToAI(message)
+        if (this.uploadedFiles.length > 0) {
+          for (let file of this.uploadedFiles) {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('memoryId', this.memoryId)
+            
+            const response = await fetch(getApiUrl('/api/ai/upload'), {
+              method: 'POST',
+              body: formData
+            })
+            
+            const result = await response.json()
+            if (!result.success) {
+               console.error('文件上传解析失败', result.message)
+               this.addErrorMessage('文件解析失败：' + result.message)
+               this.isLoading = false
+               return
+            }
+          }
+          this.uploadedFiles = []
+        }
+
+        await this.sendMessageToAI(messageContent)
       } catch (error) {
         console.error('发送消息失败:', error)
         this.addErrorMessage('抱歉，发送消息时出现错误，请稍后重试。')
