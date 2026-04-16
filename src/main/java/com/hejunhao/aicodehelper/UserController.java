@@ -43,9 +43,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        // Normalize email: treat empty or blank strings as null
+        String emailToSave = (email != null && !email.trim().isEmpty()) ? email : null;
+
         // Hash the password
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        UserEntity newUser = new UserEntity(username, hashedPassword, email);
+        UserEntity newUser = new UserEntity(username, hashedPassword, emailToSave);
         userRepository.save(newUser);
 
         response.put("success", true);
