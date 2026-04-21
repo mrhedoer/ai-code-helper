@@ -55,8 +55,23 @@ public class AiController {
 
     @GetMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chat(String memoryId, String message) {
-        return aiCodeHelperService.chatStream(memoryId, message)
-                .map(chunk -> ServerSentEvent.<String>builder().data(chunk).build())
-                .concatWith(Flux.just(ServerSentEvent.<String>builder().data("[DONE]").build()));
+        // [隐私脱敏] 拦截并替换 11 位手机号和 18 位身份证号码（图中的安全机制实现）
+        String safeMessage = message != null ? message.replaceAll("(1[3-9]\\d{9})|(\\d{17}[\\dXx])", "***") : "";
+        
+        try {
+            return aiCodeHelperService.chatStream(memoryId, safeMessage)
+                    .map(chunk -> ServerSentEvent.<String>builder().data(chunk).build())
+                    .concatWith(Flux.just(ServerSentEvent.<String>builder().data("[DONE]").build()))
+                    .onErrorResume(e -> Flux.just(
+                            ServerSentEvent.<String>builder().data("【提示】" + e.getMessage()).build(),
+                            ServerSentEvent.<String>builder().data("[DONE]").build()
+                    ));
+        } catch (Exception e) {
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "系统发生未知异常";
+            return Flux.just(
+                    ServerSentEvent.<String>builder().data("【安全拦截】" + errorMsg).build(),
+                    ServerSentEvent.<String>builder().data("[DONE]").build()
+            );
+        }
     }
 }
